@@ -5,6 +5,7 @@ import React, { useEffect, useState, useRef, useCallback } from "react";
 import { Box, Flex, Text, Button, Image, Link, useTheme } from "@blend-ui/core";
 
 import { Tabs, Tab, TabList, TabPanel, TabPanelList } from "@blend-ui/tabs";
+import moment from 'moment'
 
 import {
   useAppContext,
@@ -22,37 +23,31 @@ import {
 i18n.init();
 
 //import { useAppContext } from "../lib/contextLib";
-import { API as GRAPHQL, Auth } from "aws-amplify";
-import AWSAppSyncClient, { AUTH_TYPE } from "aws-appsync";
-
-//import Amplify, { Auth, API as GRAPHQL } from "aws-amplify";
+// import { API as GRAPHQL, Auth } from "aws-amplify";
+// import AWSAppSyncClient, { AUTH_TYPE } from "aws-appsync";
 
 import { useHistory } from "react-router-dom";
 
-import { StyledBox } from "../components/DefaultBackground";
+import { StyledBox } from "../../components/DefaultBackground";
 
-//import { listAppsQuery, addAppVersionMutation } from "../graphql/api";
-
-//import withUsermenu from "../components/UserMenu";
-
-import UploadApp from "../components/UploadApp";
+import UploadApp from "../../components/UploadApp";
 
 import PropTypes from "prop-types";
-import { DevConsoleSidebar } from "../components/components";
+import { DevConsoleSidebar } from "../../components/components";
 
-import dashboardBanner from "../assets/dashboard-banner.png";
+import dashboardBanner from "../../assets/dashboard-banner.png";
 
-import docs from "../assets/docs.png";
-import starterResources from "../assets/starterResources.png";
-import slackResources from "../assets/slackResources.png";
-import zendeskResources from "../assets/zendeskResources.png";
+import docs from "../../assets/docs.png";
+import starterResources from "../../assets/starterResources.png";
+import slackResources from "../../assets/slackResources.png";
+import zendeskResources from "../../assets/zendeskResources.png";
 
-import * as C from "../components/components";
-import { DevConsoleLogo } from "../components/DevConsoleLogo";
+import * as C from "../../components/components";
+import { DevConsoleLogo } from "../../components/DevConsoleLogo";
 
 import CreateProjectModal from "../components/CreateProjectModal";
 
-import Table from "../components/Table";
+import Table from "../../components/Table";
 import BlendIcon from "@blend-ui/icons/dist/esm/BlendIcon";
 
 import mdiPowerPlug from "@iconify/icons-mdi/power-plug";
@@ -73,64 +68,67 @@ import {
   ControlAddedDataSources,
   DataSourceForm,
   ApiForm,
-} from "../components/helper";
+} from "../../components/helper";
 
 // Create a default prop getter
 const defaultPropGetter = () => ({});
 
-const Content = ({
-  Component,
+// const Content = ({
+//   Component,
 
-  initials,
-  notificationCount,
-  updateNotificationHandler,
-  appSyncClient,
-  activeUser,
+//   initials,
+//   notificationCount,
+//   updateNotificationHandler,
+//   appSyncClient,
+//   activeUser,
 
-  ...props
+//   ...props
+// }) => {
+//   const userMenu = useUserMenu();
+//   console.log(
+//     "USERMENU DEV APP INIT  ",
+//     { ...props },
+
+//     initials,
+//     notificationCount,
+//     typeof updateNotificationHandler,
+//     appSyncClient,
+//     activeUser,
+//   );
+
+//   userMenu.setClientHandler(appSyncClient);
+//   userMenu.setActiveUser(activeUser);
+//   useEffect(() => {
+//     userMenu.show({
+//       initials: initials,
+//       effect: { hover: { width: 42 } },
+//       notifications: notificationCount,
+//       RecentApps: [],
+//       PrifinaGraphQLHandler: GRAPHQL,
+//       prifinaID: activeUser.uuid,
+//     });
+//   }, []);
+
+//   updateNotificationHandler(userMenu.onUpdate);
+
+//   return <Component data={props.data} currentUser={props.currentUser} />;
+// };
+
+// Content.propTypes = {
+//   Component: PropTypes.elementType.isRequired,
+//   initials: PropTypes.string,
+//   notificationCount: PropTypes.number,
+//   updateNotificationHandler: PropTypes.func,
+//   appSyncClient: PropTypes.instanceOf(Object),
+//   activeUser: PropTypes.instanceOf(Object),
+//   currentUser: PropTypes.instanceOf(Object),
+//   data: PropTypes.instanceOf(Array),
+// };
+
+const Main = ({
+  // data,
+  currentUser,
 }) => {
-  const userMenu = useUserMenu();
-  console.log(
-    "USERMENU DEV APP INIT  ",
-    { ...props },
-
-    initials,
-    notificationCount,
-    typeof updateNotificationHandler,
-    appSyncClient,
-    activeUser,
-  );
-
-  userMenu.setClientHandler(appSyncClient);
-  userMenu.setActiveUser(activeUser);
-  useEffect(() => {
-    userMenu.show({
-      initials: initials,
-      effect: { hover: { width: 42 } },
-      notifications: notificationCount,
-      RecentApps: [],
-      PrifinaGraphQLHandler: GRAPHQL,
-      prifinaID: activeUser.uuid,
-    });
-  }, []);
-
-  updateNotificationHandler(userMenu.onUpdate);
-
-  return <Component data={props.data} currentUser={props.currentUser} />;
-};
-
-Content.propTypes = {
-  Component: PropTypes.elementType.isRequired,
-  initials: PropTypes.string,
-  notificationCount: PropTypes.number,
-  updateNotificationHandler: PropTypes.func,
-  appSyncClient: PropTypes.instanceOf(Object),
-  activeUser: PropTypes.instanceOf(Object),
-  currentUser: PropTypes.instanceOf(Object),
-  data: PropTypes.instanceOf(Array),
-};
-
-const Main = ({ data, currentUser }) => {
   const history = useHistory();
 
   const { colors } = useTheme();
@@ -143,6 +141,83 @@ const Main = ({ data, currentUser }) => {
     "review",
     "published",
   ];
+
+  const [data, setData] = useState([])
+
+  // let data = [  ];
+
+
+
+  const fetchApps = async e => {
+    try {    
+
+      // await newAppVersionMutation(API, appFields.appId, currentUser.prifinaID, {
+      //   name: appFields.name,
+      //   title: appFields.title,
+      //   identity: currentUser.identity,
+      //   identityPool: currentUser.identityPool,
+      //   //version: appFields.version,
+      // });
+      const repsonse = await axios({
+        url: "https://api-eu-west-2.graphcms.com/v2/ckzd3vyci1bp301z14b775t0o/master",
+        method: 'post',
+        headers: headers,
+        data: getAppsQuery
+      });
+      console.log(repsonse)
+      setData(repsonse.data.data.apps)
+      
+      
+      return(
+        data.length > 0 && (
+        <Table columns={Columns} data={data} />
+        )
+      )
+
+      // history.push("/");
+    } catch (e) {
+      console.log("error ", e);
+    }
+
+
+  };
+
+  const axios = require("axios");
+  const getAppsQuery = {
+    "operationName":"getApps",
+    "query": `
+    query getApps {
+      apps {
+        appId
+        appType
+        title
+        name
+        appStatus
+        version
+        updatedAt
+      }
+    }`,
+  "variables": ""}
+  const headers = {
+    "content-type": "application/json",
+      "Authorization": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImdjbXMtbWFpbi1wcm9kdWN0aW9uIn0.eyJ2ZXJzaW9uIjozLCJpYXQiOjE2NDQ0MzcyNTksImF1ZCI6WyJodHRwczovL2FwaS1ldS13ZXN0LTIuZ3JhcGhjbXMuY29tL3YyL2NremQzdnljaTFicDMwMXoxNGI3NzV0MG8vbWFzdGVyIiwiaHR0cHM6Ly9tYW5hZ2VtZW50LW5leHQuZ3JhcGhjbXMuY29tIl0sImlzcyI6Imh0dHBzOi8vbWFuYWdlbWVudC5ncmFwaGNtcy5jb20vIiwic3ViIjoiMzVhNmMxNTMtMmQxNS00ZjE2LWE4OTgtMTgyYTBlYzliY2I5IiwianRpIjoiY2t6ZnpoaHdpMTZhYTAxejIweWZmZms5YiJ9.f3nj1nk7m7mwEKx9PMafsbG9balRtuRl91bV8BBbqKceoS3C-HELxFpbbn4Y4zQL5I_7eI0uheeXaiM0vDkXyOXA11Y_wBgQBD4eYyQwtEB5SsO7p7ZgVXqw3lK7h4ojP2QW1LbgbX1RLK_4wqRz7ItK1HT5ve5SGuUiiBaQJY2nBK5ElMwJiS4cSzHwb3K7c9vOsIO92XLlDsyUR7A2ABGcovITaQ6jTY4Udh6hvjIqQk4hhfOthmAST_Mpb4bIzqkMVs8EEPWh_9z8WnSf-PS35B4Wh9xOLXrLSL58CLV4QZodVV3Tor3BOS93SpJnF14tFJ1XC6X9zyty7gqTLj6dxGzTK9ru501I4wgc3W4lVtdDciLy4Qe5_j9kkQdMnJb2PbmV24SOsNyTgOb5n0yQFcCSy_DGAf4CWyrXzzrPIM5VrbL_dOe2Hcui1O7xKf74CuQYJRDt08MtJXgPEFDdpfidr7riBqu6DB_7L2RcsrerOsiy3GSr_9eY2I9x-Pv8NMBeNsrKS_M-j1n0PbwamgQKHYXrGMQf1LXNHRyiLAtHYI0GTL-6Xx0wNfiqUc_GXvsd0LWqAtfFClIThFpJAER-rOcXCn7eaRY2Gnoi7JiCx_xw0qbxQ1CFZlPB_Xgzhj-xG7oRPucXsmXlzeAxTg-rUsj_zZkrHX2D3iY"
+  };
+  // let data = [
+  //   {
+  //     "color": "purple",
+  //     "type": "minivan",
+  //     "registration": new Date('2017-01-03'),
+  //     "capacity": 7
+  //   },
+  //   {
+  //     "color": "red",
+  //     "type": "station wagon",
+  //     "registration": new Date('2018-03-03'),
+  //     "capacity": 5
+  //   }
+  // ]
+
+  
 
   const appTypes = ["Widget", "App"];
 
@@ -181,7 +256,7 @@ const Main = ({ data, currentUser }) => {
     },
     {
       Header: "App ID",
-      accessor: "id",
+      accessor: "appId",
       Cell: props => {
         return <Text>{props.cell.value}</Text>;
       },
@@ -189,7 +264,7 @@ const Main = ({ data, currentUser }) => {
     {
       Header: "Type",
       accessor: "appType",
-      className: "appType",
+      /*className: "appType",*/
       // Cell: cellProp => appTypes[cellProp.row.values.appType],
     },
 
@@ -199,21 +274,21 @@ const Main = ({ data, currentUser }) => {
     },
     {
       Header: "Status",
-      accessor: "status",
-      className: "status",
-      Cell: cellProp => versionStatus[cellProp.row.values.status],
+      accessor: "appStatus",
+      /*className: "status",*/
+      // Cell: cellProp => versionStatus[cellProp.row.values.status],
     },
     {
       Header: "Version",
       accessor: "version",
-      className: "version",
+      /*className: "version",*/
     },
     {
       Header: "Modified",
-      accessor: "modifiedAt",
+      accessor: "updatedAt",
       className: "date",
       Cell: props => {
-        return <Text>{props.cell.value}</Text>;
+        return <Text>{moment(props.cell.value).toDate().toUTCString()}</Text>;
       },
     },
     {
@@ -342,7 +417,7 @@ const Main = ({ data, currentUser }) => {
     setAddedDataSources2(newSourceData);
   };
 
-  const [step, setStep] = useState(2);
+  const [step, setStep] = useState(3);
 
   switch (step) {
     case 0:
@@ -400,8 +475,20 @@ const Main = ({ data, currentUser }) => {
     },
   ];
 
+  useEffect(()=>{
+    switch (step){
+      case 2:
+        fetchApps();
+        break;
+
+    }
+    
+
+  },[step])
+
   return (
     <React.Fragment>
+      
       <DevConsoleSidebar items={items} />
       <C.NavbarContainer bg="baseWhite">
         <DevConsoleLogo className="appStudio" />
@@ -420,7 +507,7 @@ const Main = ({ data, currentUser }) => {
                 <CreateProjectModal
                   onClose={onDialogClose}
                   onButtonClick={onDialogClick}
-                  // isOpen={projectDialogOpen}
+                  isOpen={projectDialogOpen}
                 />
               )}
               <Flex flexDirection="column" alignItems="center" mt="42px">
@@ -537,6 +624,9 @@ const Main = ({ data, currentUser }) => {
                             <Text m={2}>{i18n.__("noApps")}</Text>
                           </div>
                         )}
+                        {/* {
+                          fetchApps()
+                        } */}
                         {data.length > 0 && (
                           <Table columns={Columns} data={data} />
                         )}
@@ -1201,136 +1291,138 @@ Main.propTypes = {
 };
 
 const Home = props => {
-  const history = useHistory();
-  const {
-    userAuth,
-    currentUser,
-    isAuthenticated,
-    mobileApp,
-    APIConfig,
-    AUTHConfig,
-  } = useAppContext();
+  //   const history = useHistory();
+  //   const {
+  //     userAuth,
+  //     currentUser,
+  //     isAuthenticated,
+  //     mobileApp,
+  //     APIConfig,
+  //     AUTHConfig,
+  //   } = useAppContext();
 
-  console.log("HOME ", currentUser);
+  //   console.log("HOME ", currentUser);
 
-  const [initClient, setInitClient] = useState(false);
+  //   const [initClient, setInitClient] = useState(false);
 
-  const isMountedRef = useIsMountedRef();
-  const apps = useRef([]);
-  const componentProps = useRef({});
-  const activeUser = useRef({});
-  const notificationCount = useRef(0);
-  let AppComponent = Main;
+  //   const isMountedRef = useIsMountedRef();
+  //   const apps = useRef([]);
+  //   const componentProps = useRef({});
+  //   const activeUser = useRef({});
+  //   const notificationCount = useRef(0);
+  //   let AppComponent = Main;
 
-  const xcreateClient = (endpoint, region) => {
-    Auth.currentCredentials().then(c => {
-      console.log("DEV USER CLIENT ", c);
-    });
-    const client = new AWSAppSyncClient({
-      url: endpoint,
-      region: region,
-      auth: {
-        type: AUTH_TYPE.AWS_IAM,
-        credentials: () => Auth.currentCredentials(),
-      },
+  //   const xcreateClient = (endpoint, region) => {
+  //     Auth.currentCredentials().then(c => {
+  //       console.log("DEV USER CLIENT ", c);
+  //     });
+  //     const client = new AWSAppSyncClient({
+  //       url: endpoint,
+  //       region: region,
+  //       auth: {
+  //         type: AUTH_TYPE.AWS_IAM,
+  //         credentials: () => Auth.currentCredentials(),
+  //       },
 
-      disableOffline: true,
-    });
-    return client;
-  };
+  //       disableOffline: true,
+  //     });
+  //     return client;
+  //   };
 
-  const updateNotification = useCallback(handler => {
-    //notificationHandler.current = handler;
-  }, []);
+  //   const updateNotification = useCallback(handler => {
+  //     //notificationHandler.current = handler;
+  //   }, []);
 
-  useEffect(() => {
-    async function fetchData() {
-      if (isMountedRef.current) {
-        const currentPrifinaUser = await getPrifinaUserQuery(
-          GRAPHQL,
-          currentUser.prifinaID,
-        );
-        console.log("CURRENT USER ", currentPrifinaUser);
-        let appProfile = JSON.parse(
-          currentPrifinaUser.data.getPrifinaUser.appProfile,
-        );
-        console.log("CURRENT USER ", appProfile, appProfile.initials);
+  //   useEffect(() => {
+  //     async function fetchData() {
+  //       if (isMountedRef.current) {
+  //         const currentPrifinaUser = await getPrifinaUserQuery(
+  //           GRAPHQL,
+  //           currentUser.prifinaID,
+  //         );
+  //         console.log("CURRENT USER ", currentPrifinaUser);
+  //         let appProfile = JSON.parse(
+  //           currentPrifinaUser.data.getPrifinaUser.appProfile,
+  //         );
+  //         console.log("CURRENT USER ", appProfile, appProfile.initials);
 
-        let clientEndpoint = "";
-        let clientRegion = "";
+  //         let clientEndpoint = "";
+  //         let clientRegion = "";
 
-        if (!appProfile.hasOwnProperty("endpoint")) {
-          const defaultProfileUpdate = await updateUserProfileMutation(
-            GRAPHQL,
-            currentUser.prifinaID,
-          );
-          console.log("PROFILE UPDATE ", defaultProfileUpdate);
-          appProfile = JSON.parse(
-            defaultProfileUpdate.data.updateUserProfile.appProfile,
-          );
-        }
-        clientEndpoint = appProfile.endpoint;
-        clientRegion = appProfile.region;
+  //         if (!appProfile.hasOwnProperty("endpoint")) {
+  //           const defaultProfileUpdate = await updateUserProfileMutation(
+  //             GRAPHQL,
+  //             currentUser.prifinaID,
+  //           );
+  //           console.log("PROFILE UPDATE ", defaultProfileUpdate);
+  //           appProfile = JSON.parse(
+  //             defaultProfileUpdate.data.updateUserProfile.appProfile,
+  //           );
+  //         }
+  //         clientEndpoint = appProfile.endpoint;
+  //         clientRegion = appProfile.region;
 
-        //const client = createClient(clientEndpoint, clientRegion);
-        const _currentSession = await Auth.currentSession();
-        const client = await createClient(
-          clientEndpoint,
-          clientRegion,
-          _currentSession,
-        );
+  //         //const client = createClient(clientEndpoint, clientRegion);
+  //         const _currentSession = await Auth.currentSession();
+  //         const client = await createClient(
+  //           clientEndpoint,
+  //           clientRegion,
+  //           _currentSession,
+  //         );
 
-        activeUser.current = {
-          name: appProfile.name,
-          uuid: currentUser.prifinaID,
-          endpoint: clientEndpoint,
-          region: clientRegion,
-          dataConnectors: currentPrifinaUser.data.getPrifinaUser.dataSources
-            ? JSON.parse(currentPrifinaUser.data.getPrifinaUser.dataSources)
-            : {},
-        };
+  //         activeUser.current = {
+  //           name: appProfile.name,
+  //           uuid: currentUser.prifinaID,
+  //           endpoint: clientEndpoint,
+  //           region: clientRegion,
+  //           dataConnectors: currentPrifinaUser.data.getPrifinaUser.dataSources
+  //             ? JSON.parse(currentPrifinaUser.data.getPrifinaUser.dataSources)
+  //             : {},
+  //         };
 
-        const prifinaApps = await listAppsQuery(GRAPHQL, {
-          filter: { prifinaId: { eq: currentUser.prifinaID } },
-        });
-        console.log("APPS ", prifinaApps.data);
-        apps.current = prifinaApps.data.listApps.items;
+  //         const prifinaApps = await listAppsQuery(GRAPHQL, {
+  //           filter: { prifinaId: { eq: currentUser.prifinaID } },
+  //         });
+  //         console.log("APPS ", prifinaApps.data);
+  //         apps.current = prifinaApps.data.listApps.items;
 
-        console.log("APPS ", prifinaApps.data);
-        componentProps.current = {
-          data: apps.current,
-          currentUser: currentUser,
-        };
+  //         console.log("APPS ", prifinaApps.data);
+  //         componentProps.current = {
+  //           data: apps.current,
+  //           currentUser: currentUser,
+  //         };
 
-        //console.log("CURRENT SETTINGS 2", client);
-        componentProps.current.GraphQLClient = GRAPHQL;
-        componentProps.current.appSyncClient = client;
-        componentProps.current.prifinaID = currentUser.prifinaID;
-        componentProps.current.initials = appProfile.initials;
-        componentProps.current.updateNotificationHandler = updateNotification;
-        componentProps.current.activeUser = activeUser.current;
+  //         //console.log("CURRENT SETTINGS 2", client);
+  //         componentProps.current.GraphQLClient = GRAPHQL;
+  //         componentProps.current.appSyncClient = client;
+  //         componentProps.current.prifinaID = currentUser.prifinaID;
+  //         componentProps.current.initials = appProfile.initials;
+  //         componentProps.current.updateNotificationHandler = updateNotification;
+  //         componentProps.current.activeUser = activeUser.current;
 
-        console.log("COMPONENT ", componentProps);
-        setInitClient(true);
-      }
-      return null;
-    }
+  //         console.log("COMPONENT ", componentProps);
+  //         setInitClient(true);
+  //       }
+  //       return null;
+  //     }
 
-    fetchData();
-  }, [isMountedRef.current]);
+  //     fetchData();
+  //   }, [isMountedRef.current]);
 
   return (
     <>
-      {initClient && (
+      {/* {initClient && (
         <Content Component={AppComponent} {...componentProps.current} />
       )}
       {!initClient && (
         <div>Home {isAuthenticated ? "Authenticated" : "Unauthenticated"} </div>
-      )}
+      )} */}
+      <Main />
     </>
   );
 };
 
 Home.displayName = "Home";
 
-export default withUsermenu()(Home);
+export default Home;
+// export default withUsermenu()(Home);
