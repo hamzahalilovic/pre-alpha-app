@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useRef, useCallback } from "react";
 
-import { Box, Flex, Text, Button, Image, Link, useTheme } from "@blend-ui/core";
+import { Box, Flex, Text, Button, Image, Link, useTheme, Radio, RadioGroup } from "@blend-ui/core";
 
 import { Tabs, Tab, TabList, TabPanel, TabPanelList } from "@blend-ui/tabs";
 import moment from 'moment'
@@ -10,8 +10,8 @@ import moment from 'moment'
 import {
   useAppContext,
   useIsMountedRef,
-  listAppsQuery,
-  addAppVersionMutation,
+  listAppsQuery, //getAppsQuery
+  addAppVersionMutation, //
   getPrifinaUserQuery,
   updateUserProfileMutation,
   useUserMenu,
@@ -60,6 +60,8 @@ import baselineWeb from "@iconify/icons-mdi/table";
 import viewDashboard from "@iconify/icons-mdi/view-dashboard";
 import mdiWidget from "@iconify/icons-mdi/widgets";
 import mdiBookOpenVariant from "@iconify/icons-mdi/book-open-variant";
+import hazardSymbol from "@iconify/icons-mdi/warning";
+import successTick from "@iconify/icons-mdi/tick-circle";
 
 import bxsEdit from "@iconify/icons-bx/bx-edit-alt";
 
@@ -132,6 +134,35 @@ const Main = ({
   const history = useHistory();
 
   const { colors } = useTheme();
+  const [file, setFile] = useState()
+  const [saved, setSaved] = useState(false)
+
+  function handleChange(event) {
+    setFile(event.target.files[0])
+  }
+
+  function handleSubmit(event) {
+    event.preventDefault()
+    const url = 'https://api-eu-west-2.graphcms.com/v2/ckzd3vyci1bp301z14b775t0o/master/upload';
+    const formData = new FormData();
+    formData.append('fileUpload', file);
+    console.log(file)
+    console.log(formData)
+    // formData.append('fileName', file.name);
+    const config = {
+      headers: {
+        'Authorization': `Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImdjbXMtbWFpbi1wcm9kdWN0aW9uIn0.eyJ2ZXJzaW9uIjozLCJpYXQiOjE2NDQ0MzcyNTksImF1ZCI6WyJodHRwczovL2FwaS1ldS13ZXN0LTIuZ3JhcGhjbXMuY29tL3YyL2NremQzdnljaTFicDMwMXoxNGI3NzV0MG8vbWFzdGVyIiwiaHR0cHM6Ly9tYW5hZ2VtZW50LW5leHQuZ3JhcGhjbXMuY29tIl0sImlzcyI6Imh0dHBzOi8vbWFuYWdlbWVudC5ncmFwaGNtcy5jb20vIiwic3ViIjoiMzVhNmMxNTMtMmQxNS00ZjE2LWE4OTgtMTgyYTBlYzliY2I5IiwianRpIjoiY2t6ZnpoaHdpMTZhYTAxejIweWZmZms5YiJ9.f3nj1nk7m7mwEKx9PMafsbG9balRtuRl91bV8BBbqKceoS3C-HELxFpbbn4Y4zQL5I_7eI0uheeXaiM0vDkXyOXA11Y_wBgQBD4eYyQwtEB5SsO7p7ZgVXqw3lK7h4ojP2QW1LbgbX1RLK_4wqRz7ItK1HT5ve5SGuUiiBaQJY2nBK5ElMwJiS4cSzHwb3K7c9vOsIO92XLlDsyUR7A2ABGcovITaQ6jTY4Udh6hvjIqQk4hhfOthmAST_Mpb4bIzqkMVs8EEPWh_9z8WnSf-PS35B4Wh9xOLXrLSL58CLV4QZodVV3Tor3BOS93SpJnF14tFJ1XC6X9zyty7gqTLj6dxGzTK9ru501I4wgc3W4lVtdDciLy4Qe5_j9kkQdMnJb2PbmV24SOsNyTgOb5n0yQFcCSy_DGAf4CWyrXzzrPIM5VrbL_dOe2Hcui1O7xKf74CuQYJRDt08MtJXgPEFDdpfidr7riBqu6DB_7L2RcsrerOsiy3GSr_9eY2I9x-Pv8NMBeNsrKS_M-j1n0PbwamgQKHYXrGMQf1LXNHRyiLAtHYI0GTL-6Xx0wNfiqUc_GXvsd0LWqAtfFClIThFpJAER-rOcXCn7eaRY2Gnoi7JiCx_xw0qbxQ1CFZlPB_Xgzhj-xG7oRPucXsmXlzeAxTg-rUsj_zZkrHX2D3iY`,
+        // 'content-type': 'multipart/form-data',
+      },
+    };
+    axios.post(url, formData, config).then((response) => {
+      console.log(response.data);
+    });
+
+  }
+
+  const [value, setValue] = React.useState('1')
+
 
   const versionStatus = [
     "init",
@@ -145,6 +176,121 @@ const Main = ({
   const [data, setData] = useState([])
 
   // let data = [  ];
+
+  const saveChanges = async() => {
+
+
+    const updateAppDetails = {
+      "operationName":"updateAppDetails",
+      "query": `
+      mutation updateAppDetails($appType: AppType, $id: ID, $name: String) {
+        updateApp(data: {name: $name, appType: $appType}, where: {id: $id}) {
+          id
+        }
+      }`,
+      "variables": {"id": allValues.id, "name": allValues.newName, "appType": allValues.newType}
+    }
+    const response = await axios({
+      url: "https://api-eu-west-2.graphcms.com/v2/ckzd3vyci1bp301z14b775t0o/master",
+      method: 'post',
+      headers: headers,
+      data: updateAppDetails
+    });
+    console.log(response)
+    if (response.status===200){
+      setAllValues({
+        ...allValues,
+        name: allValues.newName,
+        type: allValues.newType
+      });
+      setSaved(true)
+    }
+
+  }
+
+  const warning = () => {
+    if (allValues.name!==allValues.newName||allValues.type!==allValues.newType){
+      return (
+        <Flex>
+          <Text>Unsaved Changes</Text>
+          <BlendIcon size="18px" iconify={hazardSymbol} className="icon" color="orange" />
+          <Button onClick={saveChanges} isLoading={true}>Save Changes</Button>
+        </Flex>
+        
+      )
+    } else if (saved){
+      {console.log("Testing")}
+
+      return (
+      <Flex>
+          <Text>Recent Changes Saved</Text>
+          <BlendIcon size="18px" iconify={successTick} className="icon" color="green" />
+          <Button disabled colorStyle="red">Save Changes</Button>
+        </Flex>
+      )
+    } else {
+      return (
+        <Flex>
+          <Text>No Unsaved Changes</Text>
+          <Button disabled colorStyle="red">Save Changes</Button>
+      </Flex>
+      )
+    }
+  }
+
+  const buttons = () => {
+    console.log(allValues)
+    if (allValues.newType==="App"){
+      return (
+        <Flex flexDirection="row" >
+        <Radio
+          fontSize="10px"
+          value="1"
+          onClick={()=>{setAllValues({...allValues,newType: "Widget"})}}
+        >
+          {i18n.__("widget")}
+        </Radio>
+        <Radio
+          checked
+          fontSize="10px"
+          value="2"
+          onClick={()=>{setAllValues({...allValues,newType: "App"})}}
+        >
+          {i18n.__("app")}
+        </Radio>
+        </Flex>
+        
+      )
+
+    } else if (allValues.newType==="Widget"){
+      return (
+        <Flex flexDirection="row" >
+        <Radio
+          checked
+          fontSize="10px"
+          value="1"
+          onClick={()=>{setAllValues({...allValues,newType: "Widget"})}}
+        >
+          {i18n.__("widget")}
+        </Radio>
+        <Radio
+          fontSize="10px"
+          value="2"
+          onClick={()=>{setAllValues({...allValues,newType: "App"})}}
+        >
+          {i18n.__("app")}
+        </Radio>
+        </Flex>
+      )
+      }
+  }
+
+
+  const handleNameChange = (event) => setAllValues({
+    ...allValues,
+    // title: widgets.current[w].title,
+    newName: event.target.value
+  });
 
 
 
@@ -182,12 +328,20 @@ const Main = ({
 
   };
 
+
+
   const axios = require("axios");
+
+  const headers = {
+    "content-type": "application/json",
+      "Authorization": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImdjbXMtbWFpbi1wcm9kdWN0aW9uIn0.eyJ2ZXJzaW9uIjozLCJpYXQiOjE2NDQ0MzcyNTksImF1ZCI6WyJodHRwczovL2FwaS1ldS13ZXN0LTIuZ3JhcGhjbXMuY29tL3YyL2NremQzdnljaTFicDMwMXoxNGI3NzV0MG8vbWFzdGVyIiwiaHR0cHM6Ly9tYW5hZ2VtZW50LW5leHQuZ3JhcGhjbXMuY29tIl0sImlzcyI6Imh0dHBzOi8vbWFuYWdlbWVudC5ncmFwaGNtcy5jb20vIiwic3ViIjoiMzVhNmMxNTMtMmQxNS00ZjE2LWE4OTgtMTgyYTBlYzliY2I5IiwianRpIjoiY2t6ZnpoaHdpMTZhYTAxejIweWZmZms5YiJ9.f3nj1nk7m7mwEKx9PMafsbG9balRtuRl91bV8BBbqKceoS3C-HELxFpbbn4Y4zQL5I_7eI0uheeXaiM0vDkXyOXA11Y_wBgQBD4eYyQwtEB5SsO7p7ZgVXqw3lK7h4ojP2QW1LbgbX1RLK_4wqRz7ItK1HT5ve5SGuUiiBaQJY2nBK5ElMwJiS4cSzHwb3K7c9vOsIO92XLlDsyUR7A2ABGcovITaQ6jTY4Udh6hvjIqQk4hhfOthmAST_Mpb4bIzqkMVs8EEPWh_9z8WnSf-PS35B4Wh9xOLXrLSL58CLV4QZodVV3Tor3BOS93SpJnF14tFJ1XC6X9zyty7gqTLj6dxGzTK9ru501I4wgc3W4lVtdDciLy4Qe5_j9kkQdMnJb2PbmV24SOsNyTgOb5n0yQFcCSy_DGAf4CWyrXzzrPIM5VrbL_dOe2Hcui1O7xKf74CuQYJRDt08MtJXgPEFDdpfidr7riBqu6DB_7L2RcsrerOsiy3GSr_9eY2I9x-Pv8NMBeNsrKS_M-j1n0PbwamgQKHYXrGMQf1LXNHRyiLAtHYI0GTL-6Xx0wNfiqUc_GXvsd0LWqAtfFClIThFpJAER-rOcXCn7eaRY2Gnoi7JiCx_xw0qbxQ1CFZlPB_Xgzhj-xG7oRPucXsmXlzeAxTg-rUsj_zZkrHX2D3iY"
+  };
   const getAppsQuery = {
     "operationName":"getApps",
     "query": `
     query getApps {
       apps {
+        id
         appId
         appType
         title
@@ -198,10 +352,6 @@ const Main = ({
       }
     }`,
   "variables": ""}
-  const headers = {
-    "content-type": "application/json",
-      "Authorization": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImdjbXMtbWFpbi1wcm9kdWN0aW9uIn0.eyJ2ZXJzaW9uIjozLCJpYXQiOjE2NDQ0MzcyNTksImF1ZCI6WyJodHRwczovL2FwaS1ldS13ZXN0LTIuZ3JhcGhjbXMuY29tL3YyL2NremQzdnljaTFicDMwMXoxNGI3NzV0MG8vbWFzdGVyIiwiaHR0cHM6Ly9tYW5hZ2VtZW50LW5leHQuZ3JhcGhjbXMuY29tIl0sImlzcyI6Imh0dHBzOi8vbWFuYWdlbWVudC5ncmFwaGNtcy5jb20vIiwic3ViIjoiMzVhNmMxNTMtMmQxNS00ZjE2LWE4OTgtMTgyYTBlYzliY2I5IiwianRpIjoiY2t6ZnpoaHdpMTZhYTAxejIweWZmZms5YiJ9.f3nj1nk7m7mwEKx9PMafsbG9balRtuRl91bV8BBbqKceoS3C-HELxFpbbn4Y4zQL5I_7eI0uheeXaiM0vDkXyOXA11Y_wBgQBD4eYyQwtEB5SsO7p7ZgVXqw3lK7h4ojP2QW1LbgbX1RLK_4wqRz7ItK1HT5ve5SGuUiiBaQJY2nBK5ElMwJiS4cSzHwb3K7c9vOsIO92XLlDsyUR7A2ABGcovITaQ6jTY4Udh6hvjIqQk4hhfOthmAST_Mpb4bIzqkMVs8EEPWh_9z8WnSf-PS35B4Wh9xOLXrLSL58CLV4QZodVV3Tor3BOS93SpJnF14tFJ1XC6X9zyty7gqTLj6dxGzTK9ru501I4wgc3W4lVtdDciLy4Qe5_j9kkQdMnJb2PbmV24SOsNyTgOb5n0yQFcCSy_DGAf4CWyrXzzrPIM5VrbL_dOe2Hcui1O7xKf74CuQYJRDt08MtJXgPEFDdpfidr7riBqu6DB_7L2RcsrerOsiy3GSr_9eY2I9x-Pv8NMBeNsrKS_M-j1n0PbwamgQKHYXrGMQf1LXNHRyiLAtHYI0GTL-6Xx0wNfiqUc_GXvsd0LWqAtfFClIThFpJAER-rOcXCn7eaRY2Gnoi7JiCx_xw0qbxQ1CFZlPB_Xgzhj-xG7oRPucXsmXlzeAxTg-rUsj_zZkrHX2D3iY"
-  };
   // let data = [
   //   {
   //     "color": "purple",
@@ -224,6 +374,9 @@ const Main = ({
   const [allValues, setAllValues] = useState({
     name: "",
     id: "",
+    type: "",
+    newName: "",
+    newType: ""
   });
 
   const onRowClick = (state, rowInfo, column, instance) => {
@@ -241,12 +394,17 @@ const Main = ({
           <Text
             onClick={() => {
               setStep(3);
+              setSaved(false)
               setAllValues({
                 ...allValues,
                 // title: widgets.current[w].title,
                 name: props.cell.value,
+                newName: props.cell.value,
                 id: props.row.values.id,
+                type: props.row.values.appType,
+                newType: props.row.values.appType
               });
+
             }}
           >
             {props.cell.value}
@@ -292,6 +450,10 @@ const Main = ({
       },
     },
     {
+      Header: "ID",
+      accessor: "id"
+    },
+    {
       Header: () => null, // No header
       id: "sendApp", // It needs an ID
       Cell: cellProp => {
@@ -305,6 +467,10 @@ const Main = ({
           >
             {i18n.__("submit")}
           </Button>
+          // <form onSubmit={handleSubmit}>
+          // <input type="file" onChange={handleChange}/>
+          // <button type="submit">Upload</button>
+          // </form>
         );
       },
     },
@@ -320,16 +486,17 @@ const Main = ({
 
   const closeClick = (fileUploaded = false, version) => {
     if (fileUploaded) {
-      addAppVersionMutation(GRAPHQL, {
-        id: selectedRow.current.id,
-        nextVersion: version,
-        status: 1, //received
-      }).then(res => {
+      // addAppVersionMutation(GRAPHQL, {
+      //   id: selectedRow.current.id,
+      //   nextVersion: version,
+      //   status: 1, //received
+      // }).then(res => {
         setUpload(false);
-      });
+      // });
     } else {
       setUpload(false);
     }
+
   };
 
   const [activeTab, setActiveTab] = useState(0);
@@ -444,6 +611,8 @@ const Main = ({
     e.preventDefault();
   };
 
+
+
   const onDialogClick = async e => {
     ///...further logic on adding data source data
     setProjectDialogOpen(false);
@@ -471,7 +640,7 @@ const Main = ({
     {
       id: 2,
       label: i18n.__("resources"),
-      icon: mdiBookOpenVariant,
+      icon: mdiBookOpenVariant
     },
   ];
 
@@ -484,7 +653,18 @@ const Main = ({
     }
     
 
-  },[step])
+  },[step, upload])
+
+  useEffect(()=>{
+    console.log(allValues)
+    if (allValues.name!==allValues.newName||allValues.type!==allValues.newType){
+      return console.log("true")
+    } else {
+      return console.log("false")
+    }
+    
+
+  },[allValues.newName])
 
   return (
     <React.Fragment>
@@ -857,6 +1037,29 @@ const Main = ({
                               />
                             </Flex>
                             <C.StyledInput value={allValues.id} disabled />
+                            <Flex
+                              justifyContent="space-between"
+                              mt="43px"
+                              width="748px"
+                            >
+                              <Flex flexDirection="column">
+                                <Text mb="16px" fontSize="xs">
+                                  {i18n.__("projectName")}
+                                </Text>
+                                <C.StyledInput value={allValues.newName} onChange={handleNameChange}/>
+                              </Flex>
+                              <Flex flexDirection="column">
+                                <Text mb="16px" fontSize="xs">
+                                  {i18n.__("remoteLink")}
+                                </Text>
+                                {buttons()}
+                                <Flex flexDirection="column">
+                                  {warning()}
+                                
+                                </Flex>
+
+                              </Flex>
+                            </Flex>
                             <Flex
                               justifyContent="space-between"
                               mt="43px"

@@ -7,6 +7,7 @@ import config from "../config";
 import { useFormFields } from "@prifina-apps/utils";
 
 import PropTypes from "prop-types";
+import { ConsoleLogger } from "@aws-amplify/core";
 
 //import { useFormFields } from "../lib/formFields";
 /*
@@ -46,7 +47,11 @@ const UploadApp = props => {
       //identityId?: string, // id of another user, if `level: protected`
       //const currentCredentials = await Auth.currentCredentials();
       //console.log("CREDS ", currentCredentials);
-      const userRegion = config.cognito.USER_IDENTITY_POOL_ID.split(":")[0];
+
+        const userRegion = config.cognito.USER_IDENTITY_POOL_ID.split(":")[0];
+
+
+      
 
       //const _currentSession = await Auth.currentSession();
       //const currentCredentials = await cognitoCredentials(_currentSession);
@@ -96,6 +101,83 @@ const UploadApp = props => {
     }
   };
 
+
+
+
+
+
+  const headers = {
+    "content-type": "application/json",
+      "Authorization": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImdjbXMtbWFpbi1wcm9kdWN0aW9uIn0.eyJ2ZXJzaW9uIjozLCJpYXQiOjE2NDQ0MzcyNTksImF1ZCI6WyJodHRwczovL2FwaS1ldS13ZXN0LTIuZ3JhcGhjbXMuY29tL3YyL2NremQzdnljaTFicDMwMXoxNGI3NzV0MG8vbWFzdGVyIiwiaHR0cHM6Ly9tYW5hZ2VtZW50LW5leHQuZ3JhcGhjbXMuY29tIl0sImlzcyI6Imh0dHBzOi8vbWFuYWdlbWVudC5ncmFwaGNtcy5jb20vIiwic3ViIjoiMzVhNmMxNTMtMmQxNS00ZjE2LWE4OTgtMTgyYTBlYzliY2I5IiwianRpIjoiY2t6ZnpoaHdpMTZhYTAxejIweWZmZms5YiJ9.f3nj1nk7m7mwEKx9PMafsbG9balRtuRl91bV8BBbqKceoS3C-HELxFpbbn4Y4zQL5I_7eI0uheeXaiM0vDkXyOXA11Y_wBgQBD4eYyQwtEB5SsO7p7ZgVXqw3lK7h4ojP2QW1LbgbX1RLK_4wqRz7ItK1HT5ve5SGuUiiBaQJY2nBK5ElMwJiS4cSzHwb3K7c9vOsIO92XLlDsyUR7A2ABGcovITaQ6jTY4Udh6hvjIqQk4hhfOthmAST_Mpb4bIzqkMVs8EEPWh_9z8WnSf-PS35B4Wh9xOLXrLSL58CLV4QZodVV3Tor3BOS93SpJnF14tFJ1XC6X9zyty7gqTLj6dxGzTK9ru501I4wgc3W4lVtdDciLy4Qe5_j9kkQdMnJb2PbmV24SOsNyTgOb5n0yQFcCSy_DGAf4CWyrXzzrPIM5VrbL_dOe2Hcui1O7xKf74CuQYJRDt08MtJXgPEFDdpfidr7riBqu6DB_7L2RcsrerOsiy3GSr_9eY2I9x-Pv8NMBeNsrKS_M-j1n0PbwamgQKHYXrGMQf1LXNHRyiLAtHYI0GTL-6Xx0wNfiqUc_GXvsd0LWqAtfFClIThFpJAER-rOcXCn7eaRY2Gnoi7JiCx_xw0qbxQ1CFZlPB_Xgzhj-xG7oRPucXsmXlzeAxTg-rUsj_zZkrHX2D3iY"
+  };
+  let axios = require('axios')
+
+  // const [file, setFile] = useState()
+
+  // function handleChangeInput(event) {
+  //   setFile(event.target.files[0])
+  //   handleSubmit
+  // }
+  async function handleSubmit(event) {
+    console.log(appFields.version)
+    event.preventDefault()
+    const url = 'https://api-eu-west-2.graphcms.com/v2/ckzd3vyci1bp301z14b775t0o/master';
+    const formData = new FormData();
+    const File2 = new File([event.target.files[0]],`${props.row.id}.zip`, {type: event.target.files[0].type})
+    File2.version = +(appFields.version)
+    formData.append('fileUpload', File2);
+    // console.log(file)
+    // console.log(formData)
+    // formData.append('fileName', file.name);
+    const config = {
+      headers: {
+        'Authorization': `Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImdjbXMtbWFpbi1wcm9kdWN0aW9uIn0.eyJ2ZXJzaW9uIjozLCJpYXQiOjE2NDQ0MzcyNTksImF1ZCI6WyJodHRwczovL2FwaS1ldS13ZXN0LTIuZ3JhcGhjbXMuY29tL3YyL2NremQzdnljaTFicDMwMXoxNGI3NzV0MG8vbWFzdGVyIiwiaHR0cHM6Ly9tYW5hZ2VtZW50LW5leHQuZ3JhcGhjbXMuY29tIl0sImlzcyI6Imh0dHBzOi8vbWFuYWdlbWVudC5ncmFwaGNtcy5jb20vIiwic3ViIjoiMzVhNmMxNTMtMmQxNS00ZjE2LWE4OTgtMTgyYTBlYzliY2I5IiwianRpIjoiY2t6ZnpoaHdpMTZhYTAxejIweWZmZms5YiJ9.f3nj1nk7m7mwEKx9PMafsbG9balRtuRl91bV8BBbqKceoS3C-HELxFpbbn4Y4zQL5I_7eI0uheeXaiM0vDkXyOXA11Y_wBgQBD4eYyQwtEB5SsO7p7ZgVXqw3lK7h4ojP2QW1LbgbX1RLK_4wqRz7ItK1HT5ve5SGuUiiBaQJY2nBK5ElMwJiS4cSzHwb3K7c9vOsIO92XLlDsyUR7A2ABGcovITaQ6jTY4Udh6hvjIqQk4hhfOthmAST_Mpb4bIzqkMVs8EEPWh_9z8WnSf-PS35B4Wh9xOLXrLSL58CLV4QZodVV3Tor3BOS93SpJnF14tFJ1XC6X9zyty7gqTLj6dxGzTK9ru501I4wgc3W4lVtdDciLy4Qe5_j9kkQdMnJb2PbmV24SOsNyTgOb5n0yQFcCSy_DGAf4CWyrXzzrPIM5VrbL_dOe2Hcui1O7xKf74CuQYJRDt08MtJXgPEFDdpfidr7riBqu6DB_7L2RcsrerOsiy3GSr_9eY2I9x-Pv8NMBeNsrKS_M-j1n0PbwamgQKHYXrGMQf1LXNHRyiLAtHYI0GTL-6Xx0wNfiqUc_GXvsd0LWqAtfFClIThFpJAER-rOcXCn7eaRY2Gnoi7JiCx_xw0qbxQ1CFZlPB_Xgzhj-xG7oRPucXsmXlzeAxTg-rUsj_zZkrHX2D3iY`,
+        // 'content-type': 'multipart/form-data',
+      },
+    };
+    
+    await axios.post(url+"/upload", formData, config).then(async (response) => {
+      console.log(response.data);
+      const connectPackage = {
+        "operationName":"connectPackage",
+        "query": `
+        mutation connectPackage($id: ID, $id1: ID, $version: Float) {
+          updateApp(data: {version: $version, package: {connect: {id: $id}}}, where: {id: $id1}) {
+            id
+          }
+        }`,
+        "variables": {"id": response.data.id, "id1": props.row.id, "version": +(appFields.version)}
+      }
+      // const renamePackage = {
+      //   "operationName":"renamePackage",
+      //   "query": `
+      //   mutation renamePackage($id: ID, $name: String) {
+      //     updateAsset(data: {fileName: $name}, where: {id: $id}) {
+      //       id
+      //     }
+      //   }`,
+      //   "variables": {"id": response.data.id, "name": props.row.id+".zip"}
+      // }
+      const response1 = await axios({
+        url: url,
+        method: 'post',
+        headers: headers,
+        data: connectPackage
+      });
+      // const response2 = await axios({
+      //   url: url,
+      //   method: 'post',
+      //   headers: headers,
+      //   data: renamePackage
+      // });
+      console.log(response1)
+    });
+    
+
+    
+
+  }
+
   return (
     <>
       <Box mt={20} mb={10}>
@@ -113,7 +195,7 @@ const UploadApp = props => {
         id={"file_upload"}
         name={"file_upload"}
         accept={".zip"}
-        onChange={uploadFile}
+        onChange={handleSubmit}
         variation={"file"}
       >
         Upload file

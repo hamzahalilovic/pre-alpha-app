@@ -33,7 +33,8 @@
     "babel-jest": "^27.1.1",
     "babel-loader": "^8.2.2",
     "babel-plugin-react-docgen": "^4.2.1",
-    "babel-plugin-styled-components": "^1.13.2"
+    "babel-plugin-styled-components": "^1.13.2",
+    "chromatic": "^6.4.3"
   },
   "dependencies": {
     "@blend-ui/core": "1.1.64-alpha.0",
@@ -62,6 +63,7 @@
     "axios": "^0.25.0",
     "cross-env": "^7.0.3",
     "crypto-js": "^4.1.1",
+    "fs": "^0.0.1-security",
     "graphql-tag": "^2.12.5",
     "moment": "^2.29.1",
     "moment-timezone": "^0.5.33",
