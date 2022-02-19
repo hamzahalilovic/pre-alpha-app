@@ -14,7 +14,8 @@
   "scripts": {
     "start": "cross-env PORT=3001 react-scripts start",
     "build": "react-scripts build",
-    "storybook": "start-storybook"
+    "storybook": "start-storybook",
+    "build-storybook": "build-storybook -s public"
   },
   "devDependencies": {
     "@babel/cli": "^7.15.4",
