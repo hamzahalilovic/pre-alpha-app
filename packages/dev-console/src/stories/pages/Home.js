@@ -634,7 +634,7 @@ const Main = ({
     setAddedDataSources2(newSourceData);
   };
 
-  const [step, setStep] = useState(3);
+  const [step, setStep] = useState(0);
 
   switch (step) {
     case 0:
