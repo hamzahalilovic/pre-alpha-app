@@ -1,3 +1,11 @@
-# pre-alpha-app
-yarn build in packages/utils
-yarn storybook in packages/dev-console
+# `dev-console`
+
+> TODO: description
+
+## Usage
+
+```
+const devConsole = require('dev-console');
+
+// TODO: DEMONSTRATE API
+```
