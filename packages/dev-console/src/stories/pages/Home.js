@@ -154,6 +154,10 @@ const Main = ({
 
   const toast = useToast();
 
+  const [differenceDataSources, setDifferenceDataSources] = useState(false);
+  // const [permDataSource, setPermDataSource] = useState([]);
+
+
   const versionStatus = [
     "init",
     "received",
@@ -167,6 +171,9 @@ const Main = ({
 
   const [file, setFile] = useState();
   const [saved, setSaved] = useState(false);
+  const [savedResources, setSavedResources] = useState(false);
+  const [savedBuild, setSavedBuild] = useState(false);
+
 
   function handleChange(event) {
     setFile(event.target.files[0]);
@@ -197,6 +204,7 @@ const Main = ({
   const [data, setData] = useState([]);
 
   // let data = [  ];
+
 
   const saveChanges = async () => {
     const updateAppDetails = {
@@ -237,6 +245,8 @@ const Main = ({
       allValues.type !== allValues.newType
     ) {
       return (
+
+        
         <Flex alignItems="center">
           <Text fontSize="xs">Unsaved Changes</Text>
           <div style={{ marginLeft: 5 }}>
@@ -290,6 +300,151 @@ const Main = ({
       );
     }
   };
+
+
+  const warningResources = () => {
+    if (
+      differenceDataSources
+    ) {
+      return (
+        <Flex alignItems="center">
+          
+          <Text fontSize="xs">Unsaved Changes</Text>
+          <div style={{ marginLeft: 5 }}>
+            <BlendIcon
+              size="18px"
+              iconify={hazardSymbol}
+              className="icon"
+              color="orange"
+            />
+          </div>
+          <Button
+            ml="8px"
+            onClick={() => {
+              saveChangesResources();
+              // setPermDataSource(...dataSource.concat(apiData))
+              // setSavedResources(true)
+            }}
+            
+          >
+            Save Changes
+          </Button>
+        </Flex>
+      );
+    } else if (savedResources) {
+      {
+        console.log("Testing");
+      }
+
+      return (
+        <Flex alignItems="center">
+          <Text fontSize="xs">Changes Saved</Text>
+          <div style={{ marginLeft: 5 }}>
+            <BlendIcon
+              size="18px"
+              iconify={successTick}
+              className="icon"
+              color="green"
+            />
+          </div>
+          <Button disabled colorStyle="red" ml="8px">
+            Save Changes
+          </Button>
+        </Flex>
+      );
+    } else {
+      return (
+        <Flex alignItems="center">
+          <Text fontSize="xs">No Unsaved Changes</Text>
+          <Button disabled colorStyle="red" ml="8px">
+            Save Changes
+          </Button>
+        </Flex>
+      );
+    }
+  };
+
+  let handleVersionChange = (e) => {
+    
+    let inputValue = e.target.value
+    var letters = /^[0-9|.]+$/
+    console.log("INPUT VALUE", inputValue)
+    console.log("INPUT VALUE", inputValue.slice(-1))
+    console.log("INPUT VALUE", inputValue.slice(-1)==='.')
+    console.log("INPUT VALUE", parseFloat([inputValue,'.0'].join('')))
+    if ((inputValue.slice(-1).match(letters))){
+      setAllValues({
+        ...allValues,
+        newVersion: inputValue
+
+      })
+    }
+
+
+  }
+
+  const warningBuild = () => {
+    if (
+      allValues.version!==allValues.newVersion
+    ) {
+      return (
+        <Flex alignItems="center">
+          
+          <Text fontSize="xs">Unsaved Changes</Text>
+          <div style={{ marginLeft: 5 }}>
+            <BlendIcon
+              size="18px"
+              iconify={hazardSymbol}
+              className="icon"
+              color="orange"
+            />
+          </div>
+          <Button
+            ml="8px"
+            onClick={() => {
+              saveChangesBuild();
+              // setPermDataSource(...dataSource.concat(apiData))
+              // setSavedResources(true)
+            }}
+            
+          >
+            Save Changes
+          </Button>
+        </Flex>
+      );
+    } else if (savedBuild) {
+      {
+        console.log("Testing");
+      }
+
+      return (
+        <Flex alignItems="center">
+          <Text fontSize="xs">Changes Saved</Text>
+          <div style={{ marginLeft: 5 }}>
+            <BlendIcon
+              size="18px"
+              iconify={successTick}
+              className="icon"
+              color="green"
+            />
+          </div>
+          <Button disabled colorStyle="red" ml="8px">
+            Save Changes
+          </Button>
+        </Flex>
+      );
+    } else {
+      return (
+        <Flex alignItems="center">
+          <Text fontSize="xs">No Unsaved Changes</Text>
+          <Button disabled colorStyle="red" ml="8px">
+            Save Changes
+          </Button>
+        </Flex>
+      );
+    }
+  };
+
 
   const buttons = () => {
     console.log(allValues);
@@ -357,13 +512,7 @@ const Main = ({
 
   const fetchApps = async e => {
     try {
-      // await newAppVersionMutation(API, appFields.appId, currentUser.prifinaID, {
-      //   name: appFields.name,
-      //   title: appFields.title,
-      //   identity: currentUser.identity,
-      //   identityPool: currentUser.identityPool,
-      //   //version: appFields.version,
-      // });
+
       const repsonse = await axios({
         url: "https://api-eu-west-2.graphcms.com/v2/ckzd3vyci1bp301z14b775t0o/master",
         method: "post",
@@ -381,14 +530,107 @@ const Main = ({
     }
   };
 
+  const saveChangesBuild = async() => {
+        const updateAppDetails = {
+          "operationName":"updateVersion",
+          "query": `
+          mutation updateVersion($id: ID, $version: Float) {
+            updateApp(data: {version: $version}, where: {id: $id}){
+              id
+            }
+          }
+          `,
+          "variables": {"id": allValues.id, "version": parseFloat(allValues.newVersion)}
+        }
+        const response = await axios({
+          url: "https://api-eu-west-2.graphcms.com/v2/ckzd3vyci1bp301z14b775t0o/master",
+          method: 'post',
+          headers: headers,
+          data: updateAppDetails
+        });
+        console.log(response)
+      
+    setAllValues({
+      ...allValues,
+      version: allValues.newVersion
+
+    })
+    setSavedBuild(true)
+    toast.success("Project build saved successfully", {});
+
+  }
+
+  const saveChangesResources = async() => {
+    const dataSources = apiData.data
+    let clonedArray = JSON.parse(JSON.stringify(dataSources))
+    clonedArray = dataSources.map(a => {return {...a}})
+    let clonedArray2 = JSON.parse(JSON.stringify(dataSources))
+    clonedArray2 = dataSources.map(a => {return {...a}})
+    let x=0
+    apiData.data.forEach(async data=>{
+      if(apiData.history.some(item => item.id === data.id)){
+        const updateAppDetails = {
+          "operationName":"updateAppDetails",
+          "query": `
+          mutation updateAppDetails($id: ID, $details: String, $isAdded: Boolean) {
+            updateApi(data: {desc: $details, added: $isAdded}, where: {id: $id}) {
+              id
+            }
+          }`,
+          "variables": {"id": data.id, "details": data.details, "isAdded": data.isAdded}
+        }
+        const response = await axios({
+          url: "https://api-eu-west-2.graphcms.com/v2/ckzd3vyci1bp301z14b775t0o/master",
+          method: 'post',
+          headers: headers,
+          data: updateAppDetails
+        });
+        console.log(response)
+      } else {
+        const createAppDetails = {
+          "operationName":"createAppDetails",
+          "query": `
+          mutation createAppDetails($id: ID, $url: String, $details: String, $isAdded: Boolean) {
+            createApi(data: {app: {connect: {id: $id}},url: $url, desc: $details, added: $isAdded}) {
+              id
+            }
+          }`,
+          "variables": {"id": allValues.id, "url": data.text, "details": data.details, "isAdded": data.isAdded}
+        }
+        const response = await axios({
+          url: "https://api-eu-west-2.graphcms.com/v2/ckzd3vyci1bp301z14b775t0o/master",
+          method: 'post',
+          headers: headers,
+          data: createAppDetails
+        });
+        clonedArray[x].id=response.data.data.createApi.id
+        clonedArray2[x].id=response.data.data.createApi.id
+        console.log(response)
+      }
+      x++
+
+    })
+    setApiData({
+      data: clonedArray,
+      history: clonedArray2
+
+    })
+    setSavedResources(true)
+    setDifferenceDataSources(false)
+    toast.success("Project data sources saved successfully", {});
+
+  }
+
+
   const headers = {
     "content-type": "application/json",
     Authorization:
       "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImdjbXMtbWFpbi1wcm9kdWN0aW9uIn0.eyJ2ZXJzaW9uIjozLCJpYXQiOjE2NDQ0MzcyNTksImF1ZCI6WyJodHRwczovL2FwaS1ldS13ZXN0LTIuZ3JhcGhjbXMuY29tL3YyL2NremQzdnljaTFicDMwMXoxNGI3NzV0MG8vbWFzdGVyIiwiaHR0cHM6Ly9tYW5hZ2VtZW50LW5leHQuZ3JhcGhjbXMuY29tIl0sImlzcyI6Imh0dHBzOi8vbWFuYWdlbWVudC5ncmFwaGNtcy5jb20vIiwic3ViIjoiMzVhNmMxNTMtMmQxNS00ZjE2LWE4OTgtMTgyYTBlYzliY2I5IiwianRpIjoiY2t6ZnpoaHdpMTZhYTAxejIweWZmZms5YiJ9.f3nj1nk7m7mwEKx9PMafsbG9balRtuRl91bV8BBbqKceoS3C-HELxFpbbn4Y4zQL5I_7eI0uheeXaiM0vDkXyOXA11Y_wBgQBD4eYyQwtEB5SsO7p7ZgVXqw3lK7h4ojP2QW1LbgbX1RLK_4wqRz7ItK1HT5ve5SGuUiiBaQJY2nBK5ElMwJiS4cSzHwb3K7c9vOsIO92XLlDsyUR7A2ABGcovITaQ6jTY4Udh6hvjIqQk4hhfOthmAST_Mpb4bIzqkMVs8EEPWh_9z8WnSf-PS35B4Wh9xOLXrLSL58CLV4QZodVV3Tor3BOS93SpJnF14tFJ1XC6X9zyty7gqTLj6dxGzTK9ru501I4wgc3W4lVtdDciLy4Qe5_j9kkQdMnJb2PbmV24SOsNyTgOb5n0yQFcCSy_DGAf4CWyrXzzrPIM5VrbL_dOe2Hcui1O7xKf74CuQYJRDt08MtJXgPEFDdpfidr7riBqu6DB_7L2RcsrerOsiy3GSr_9eY2I9x-Pv8NMBeNsrKS_M-j1n0PbwamgQKHYXrGMQf1LXNHRyiLAtHYI0GTL-6Xx0wNfiqUc_GXvsd0LWqAtfFClIThFpJAER-rOcXCn7eaRY2Gnoi7JiCx_xw0qbxQ1CFZlPB_Xgzhj-xG7oRPucXsmXlzeAxTg-rUsj_zZkrHX2D3iY",
   };
   const getAppsQuery = {
-    operationName: "getApps",
-    query: `
+
+    "operationName":"getApps",
+    "query": `
     query getApps {
       apps {
         id
@@ -399,10 +641,24 @@ const Main = ({
         appStatus
         version
         updatedAt
+        dataSource {
+          __typename
+          ... on Api {
+            id
+            url
+            desc
+            added
+          }
+          ... on UserCloud {
+            id
+            title
+            desc
+          }
+        }
       }
     }`,
-    variables: "",
-  };
+  "variables": ""}
+
   // let data = [
   //   {
   //     "color": "purple",
@@ -426,8 +682,11 @@ const Main = ({
     name: "",
     id: "",
     type: "",
+
+    version: "",
     newName: "",
     newType: "",
+    newVersion: "",
   });
 
   const onRowClick = (state, rowInfo, column, instance) => {
@@ -446,15 +705,71 @@ const Main = ({
             onClick={() => {
               setStep(3);
               setSaved(false);
-              setAllValues({
-                ...allValues,
-                // title: widgets.current[w].title,
-                name: props.cell.value,
-                newName: props.cell.value,
-                id: props.row.values.id,
-                type: props.row.values.appType,
-                newType: props.row.values.appType,
-              });
+
+              // setAllValues({
+              //   ...allValues,
+              //   // title: widgets.current[w].title,
+              //   name: props.cell.value,
+              //   newName: props.cell.value,
+              //   id: props.row.values.id,
+              //   type: props.row.values.appType,
+              //   newType: props.row.values.appType,
+              // });
+              if (props.row.values.version===null){
+                setAllValues({
+                  ...allValues,
+                  // title: widgets.current[w].title,
+                  name: props.cell.value,
+                  newName: props.cell.value,
+                  id: props.row.values.id,
+                  type: props.row.values.appType,
+                  newType: props.row.values.appType,
+                  version: "",
+                  newVersion: ""
+                });
+
+              } else {
+                setAllValues({
+                  ...allValues,
+                  // title: widgets.current[w].title,
+                  name: props.cell.value,
+                  newName: props.cell.value,
+                  id: props.row.values.id,
+                  type: props.row.values.appType,
+                  newType: props.row.values.appType,
+                  version: props.row.values.version.toString(),
+                  newVersion: props.row.values.version.toString()
+                });
+              }
+
+              setSaved(false)
+              setSavedBuild(false)
+              setSavedResources(false)
+              console.log("test - ", props.row.values.version.toString())
+              let x = []
+              props.row.values.dataSource.map(dataSource => {
+                if (dataSource.__typename==="Api")
+                x.push({"text": dataSource.url, "isAdded":dataSource.added, "id": dataSource.id, "details": dataSource.desc})
+              })
+              //Deepcloning
+              let clonedArray = JSON.parse(JSON.stringify(x))
+              clonedArray = x.map(a => {return {...a}})
+
+
+              
+              if (x.length===0){
+
+                setApiData({
+                  data: [],
+                  history: []
+                })
+              } else {
+                setApiData({
+                  data: x,
+                  history: clonedArray
+                })
+                
+              }
             }}
           >
             {props.cell.value}
@@ -500,6 +815,13 @@ const Main = ({
         return <Text>{moment(props.cell.value).toDate().toUTCString()}</Text>;
       },
     },
+
+    {
+      Header: "dataSource",
+      accessor: "dataSource"
+    },
+    
+
     // {
     //   Header: "ID",
     //   accessor: "id",
@@ -574,14 +896,21 @@ const Main = ({
   };
 
   const [dataSource, setDataSource] = useState([]);
-  const [apiData, setApiData] = useState([]);
+
+  
+  
+  const [apiData, setApiData] = useState({
+      data: [],
+      history: []
+  });
+
 
   console.log("CLOUD DATA", dataSource);
   console.log("API DATA", apiData);
 
   let addedDataSources = dataSource
-    .concat(apiData)
-    .filter(key => key.isAdded == true);
+    .concat(apiData.data)
+    .filter(key => key.isAdded === true);
   console.log("ADDED DATA", addedDataSources);
 
   const [addedDataSources2, setAddedDataSources2] = useState([]);
@@ -610,29 +939,60 @@ const Main = ({
   //////API
 
   const addApiSource = text => {
-    const newSourceData = [...apiData, { text }];
-    setApiData(newSourceData);
+    const newSourceData = [...apiData.data, { text, "isAdded": false }];
+    setApiData({
+      data: newSourceData,
+      history: [...apiData.history]
+    });
   };
 
   const removeApiSource = index => {
-    const newSourceData = [...apiData];
+    const newSourceData = [...apiData.data];
     newSourceData.splice(index, 1);
-    setApiData(newSourceData);
+    setApiData({
+      data: newSourceData,
+      history: [...apiData.history]
+    });
   };
 
   const completeApiSource = index => {
-    const newSourceData = [...apiData];
+    const newSourceData = [...apiData.data];
     newSourceData[index].isAdded = true;
-    setApiData(newSourceData);
+    console.log(newSourceData)
+    setApiData({
+      data: newSourceData,
+      history: [...apiData.history]
+    });
+    console.log(apiData)
+
   };
 
   ////common data sources
 
   const uncompleteDataSource = index => {
-    const newSourceData = [...addedDataSources];
+    const newSourceData = [...apiData.data];
+
     newSourceData[index].isAdded = false;
     setAddedDataSources2(newSourceData);
   };
+
+
+  const addDataSourceDetails = (index,text) => {
+    const newSourceData = [...apiData.data];
+    newSourceData[index].details = text;
+    // console.log("Test")
+  
+    setApiData({
+      data: newSourceData,
+      history: [...apiData.history]
+    });
+
+    // submitAPISources(index);
+    // console.log(newSourceData)
+    // console.log("3")
+
+  };
+
 
   const [step, setStep] = useState(0);
 
@@ -711,6 +1071,36 @@ const Main = ({
       return console.log("false");
     }
   }, [allValues.newName]);
+
+
+  useEffect(() => {
+    // console.log("all", dataSource.concat(apiData))
+    let x = true;
+    let allSources = dataSource.concat(apiData.data)
+    if (allSources.length!==apiData.history.length) x=false
+    for (var i = 0; i < allSources.length&&x; ++i) {
+      if (allSources[i].text!==apiData.history[i].text){
+        console.log("Different")
+        x = false
+      } else if (allSources[i].id!==apiData.history[i].id){
+        console.log("Different")
+        x = false
+      } else if (allSources[i].isAdded!==apiData.history[i].isAdded){
+        console.log("Different")
+        x = false
+      } else if (allSources[i].details!==apiData.history[i].details){
+        console.log("Different")
+        x = false
+      }
+    }
+
+    if (x){
+      console.log("SAME")
+    } else {
+      console.log("DIFF")
+    }
+    setDifferenceDataSources(!x)
+  }, [addedDataSources]);
 
   return (
     <React.Fragment>
@@ -933,10 +1323,9 @@ const Main = ({
                   <Flex justifyContent="space-between">
                     <Text textStyle="h4">Build deployment</Text>
                     <Flex alignItems="center">
-                      <Text fontSize="xs">No changes detected</Text>
-                      <Button ml="17px" disabled>
-                        Save Changes
-                      </Button>
+
+                      {warningBuild()}
+
                     </Flex>
                   </Flex>
                   <Flex
@@ -972,7 +1361,8 @@ const Main = ({
                     </Box>
                     <Box marginLeft="10px">
                       <Text fontSize="sm">Version number</Text>
-                      <Input width="684px" label="text" />
+                      <Input width="684px" label="text" value={allValues.newVersion} onChange={handleVersionChange}/>
+
                     </Box>
                   </Flex>
                   <Flex
@@ -1021,10 +1411,13 @@ const Main = ({
                   <Flex justifyContent="space-between">
                     <Text textStyle="h3">Data resources</Text>
                     <Flex alignItems="center">
-                      <Text fontSize="xs">No changes detected</Text>
-                      <Button ml="17px" disabled>
+
+                      {/* <Text fontSize="xs">No changes detected</Text> */}
+                      {/* <Button ml="17px" disabled>
                         Save Changes
-                      </Button>
+                      </Button> */}
+                      {warningResources()}
+
                     </Flex>
                   </Flex>
                   <Flex
@@ -1087,7 +1480,9 @@ const Main = ({
 
                               {/* Box with state change */}
                               <Flex>
-                                {apiData.length > 0 && (
+
+                                {apiData.data.length > 0 && (
+
                                   <Flex
                                     width="100%"
                                     flexDirection="column"
@@ -1102,7 +1497,9 @@ const Main = ({
                                     </Text>
                                     <Flex>
                                       <Flex flexDirection="column">
-                                        {apiData.map((event, index) => (
+
+                                        {apiData.data.map((event, index) => (
+
                                           <AddRemoveDataSources
                                             key={index}
                                             index={index}
@@ -1208,6 +1605,9 @@ const Main = ({
                                   dataSource={event}
                                   uncompleteDataSource={uncompleteDataSource}
                                   editControled={editControled}
+
+                                  addDataSourceDetails={addDataSourceDetails}
+
                                 />
                               ))}
                             </Flex>
