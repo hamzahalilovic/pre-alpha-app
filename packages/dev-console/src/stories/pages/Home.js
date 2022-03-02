@@ -2,16 +2,28 @@
 
 import React, { useEffect, useState, useRef, useCallback } from "react";
 
-import { Box, Flex, Text, Button, Image, Link, useTheme, Radio, RadioGroup } from "@blend-ui/core";
+import {
+  Box,
+  Flex,
+  Text,
+  Button,
+  Image,
+  Link,
+  Input,
+  Radio,
+  Divider,
+  useTheme,
+} from "@blend-ui/core";
 
 import { Tabs, Tab, TabList, TabPanel, TabPanelList } from "@blend-ui/tabs";
-import moment from 'moment'
+
+import { useToast, ToastContextProvider } from "@blend-ui/toast";
 
 import {
   useAppContext,
   useIsMountedRef,
-  listAppsQuery, //getAppsQuery
-  addAppVersionMutation, //
+  listAppsQuery,
+  addAppVersionMutation,
   getPrifinaUserQuery,
   updateUserProfileMutation,
   useUserMenu,
@@ -27,6 +39,10 @@ i18n.init();
 // import AWSAppSyncClient, { AUTH_TYPE } from "aws-appsync";
 
 import { useHistory } from "react-router-dom";
+
+import moment from "moment";
+
+const axios = require("axios");
 
 import { StyledBox } from "../../components/DefaultBackground";
 
@@ -60,6 +76,7 @@ import baselineWeb from "@iconify/icons-mdi/table";
 import viewDashboard from "@iconify/icons-mdi/view-dashboard";
 import mdiWidget from "@iconify/icons-mdi/widgets";
 import mdiBookOpenVariant from "@iconify/icons-mdi/book-open-variant";
+
 import hazardSymbol from "@iconify/icons-mdi/warning";
 import successTick from "@iconify/icons-mdi/tick-circle";
 
@@ -70,7 +87,7 @@ import {
   ControlAddedDataSources,
   DataSourceForm,
   ApiForm,
-} from "../../components/helper";
+} from "../components/helper";
 
 // Create a default prop getter
 const defaultPropGetter = () => ({});
@@ -134,35 +151,10 @@ const Main = ({
   const history = useHistory();
 
   const { colors } = useTheme();
-  const [file, setFile] = useState()
-  const [saved, setSaved] = useState(false)
 
-  function handleChange(event) {
-    setFile(event.target.files[0])
-  }
-
-  function handleSubmit(event) {
-    event.preventDefault()
-    const url = 'https://api-eu-west-2.graphcms.com/v2/ckzd3vyci1bp301z14b775t0o/master/upload';
-    const formData = new FormData();
-    formData.append('fileUpload', file);
-    console.log(file)
-    console.log(formData)
-    // formData.append('fileName', file.name);
-    const config = {
-      headers: {
-        'Authorization': `Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImdjbXMtbWFpbi1wcm9kdWN0aW9uIn0.eyJ2ZXJzaW9uIjozLCJpYXQiOjE2NDQ0MzcyNTksImF1ZCI6WyJodHRwczovL2FwaS1ldS13ZXN0LTIuZ3JhcGhjbXMuY29tL3YyL2NremQzdnljaTFicDMwMXoxNGI3NzV0MG8vbWFzdGVyIiwiaHR0cHM6Ly9tYW5hZ2VtZW50LW5leHQuZ3JhcGhjbXMuY29tIl0sImlzcyI6Imh0dHBzOi8vbWFuYWdlbWVudC5ncmFwaGNtcy5jb20vIiwic3ViIjoiMzVhNmMxNTMtMmQxNS00ZjE2LWE4OTgtMTgyYTBlYzliY2I5IiwianRpIjoiY2t6ZnpoaHdpMTZhYTAxejIweWZmZms5YiJ9.f3nj1nk7m7mwEKx9PMafsbG9balRtuRl91bV8BBbqKceoS3C-HELxFpbbn4Y4zQL5I_7eI0uheeXaiM0vDkXyOXA11Y_wBgQBD4eYyQwtEB5SsO7p7ZgVXqw3lK7h4ojP2QW1LbgbX1RLK_4wqRz7ItK1HT5ve5SGuUiiBaQJY2nBK5ElMwJiS4cSzHwb3K7c9vOsIO92XLlDsyUR7A2ABGcovITaQ6jTY4Udh6hvjIqQk4hhfOthmAST_Mpb4bIzqkMVs8EEPWh_9z8WnSf-PS35B4Wh9xOLXrLSL58CLV4QZodVV3Tor3BOS93SpJnF14tFJ1XC6X9zyty7gqTLj6dxGzTK9ru501I4wgc3W4lVtdDciLy4Qe5_j9kkQdMnJb2PbmV24SOsNyTgOb5n0yQFcCSy_DGAf4CWyrXzzrPIM5VrbL_dOe2Hcui1O7xKf74CuQYJRDt08MtJXgPEFDdpfidr7riBqu6DB_7L2RcsrerOsiy3GSr_9eY2I9x-Pv8NMBeNsrKS_M-j1n0PbwamgQKHYXrGMQf1LXNHRyiLAtHYI0GTL-6Xx0wNfiqUc_GXvsd0LWqAtfFClIThFpJAER-rOcXCn7eaRY2Gnoi7JiCx_xw0qbxQ1CFZlPB_Xgzhj-xG7oRPucXsmXlzeAxTg-rUsj_zZkrHX2D3iY`,
-        // 'content-type': 'multipart/form-data',
-      },
-    };
-    axios.post(url, formData, config).then((response) => {
-      console.log(response.data);
-    });
-
-  }
-
-  const [value, setValue] = React.useState('1')
-
+  const toast = useToast();
+  const [differenceDataSources, setDifferenceDataSources] = useState(false);
+  // const [permDataSource, setPermDataSource] = useState([]);
 
   const versionStatus = [
     "init",
@@ -173,168 +165,460 @@ const Main = ({
     "published",
   ];
 
-  const [data, setData] = useState([])
+  /////--------------------------------------------------------------------DYLANS WORK
+
+  const [file, setFile] = useState();
+  const [saved, setSaved] = useState(false);
+  const [savedResources, setSavedResources] = useState(false);
+  const [savedBuild, setSavedBuild] = useState(false);
+
+  function handleChange(event) {
+    setFile(event.target.files[0]);
+  }
+
+  function handleSubmit(event) {
+    event.preventDefault();
+    const url =
+      "https://api-eu-west-2.graphcms.com/v2/ckzd3vyci1bp301z14b775t0o/master/upload";
+    const formData = new FormData();
+    formData.append("fileUpload", file);
+    console.log(file);
+    console.log(formData);
+    // formData.append('fileName', file.name);
+    const config = {
+      headers: {
+        Authorization: `Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImdjbXMtbWFpbi1wcm9kdWN0aW9uIn0.eyJ2ZXJzaW9uIjozLCJpYXQiOjE2NDQ0MzcyNTksImF1ZCI6WyJodHRwczovL2FwaS1ldS13ZXN0LTIuZ3JhcGhjbXMuY29tL3YyL2NremQzdnljaTFicDMwMXoxNGI3NzV0MG8vbWFzdGVyIiwiaHR0cHM6Ly9tYW5hZ2VtZW50LW5leHQuZ3JhcGhjbXMuY29tIl0sImlzcyI6Imh0dHBzOi8vbWFuYWdlbWVudC5ncmFwaGNtcy5jb20vIiwic3ViIjoiMzVhNmMxNTMtMmQxNS00ZjE2LWE4OTgtMTgyYTBlYzliY2I5IiwianRpIjoiY2t6ZnpoaHdpMTZhYTAxejIweWZmZms5YiJ9.f3nj1nk7m7mwEKx9PMafsbG9balRtuRl91bV8BBbqKceoS3C-HELxFpbbn4Y4zQL5I_7eI0uheeXaiM0vDkXyOXA11Y_wBgQBD4eYyQwtEB5SsO7p7ZgVXqw3lK7h4ojP2QW1LbgbX1RLK_4wqRz7ItK1HT5ve5SGuUiiBaQJY2nBK5ElMwJiS4cSzHwb3K7c9vOsIO92XLlDsyUR7A2ABGcovITaQ6jTY4Udh6hvjIqQk4hhfOthmAST_Mpb4bIzqkMVs8EEPWh_9z8WnSf-PS35B4Wh9xOLXrLSL58CLV4QZodVV3Tor3BOS93SpJnF14tFJ1XC6X9zyty7gqTLj6dxGzTK9ru501I4wgc3W4lVtdDciLy4Qe5_j9kkQdMnJb2PbmV24SOsNyTgOb5n0yQFcCSy_DGAf4CWyrXzzrPIM5VrbL_dOe2Hcui1O7xKf74CuQYJRDt08MtJXgPEFDdpfidr7riBqu6DB_7L2RcsrerOsiy3GSr_9eY2I9x-Pv8NMBeNsrKS_M-j1n0PbwamgQKHYXrGMQf1LXNHRyiLAtHYI0GTL-6Xx0wNfiqUc_GXvsd0LWqAtfFClIThFpJAER-rOcXCn7eaRY2Gnoi7JiCx_xw0qbxQ1CFZlPB_Xgzhj-xG7oRPucXsmXlzeAxTg-rUsj_zZkrHX2D3iY`,
+        // 'content-type': 'multipart/form-data',
+      },
+    };
+    axios.post(url, formData, config).then(response => {
+      console.log(response.data);
+    });
+  }
+
+  const [value, setValue] = React.useState("1");
+
+  const [data, setData] = useState([]);
 
   // let data = [  ];
 
-  const saveChanges = async() => {
+ 
 
-
+  const saveChanges = async () => {
     const updateAppDetails = {
-      "operationName":"updateAppDetails",
-      "query": `
+      operationName: "updateAppDetails",
+      query: `
       mutation updateAppDetails($appType: AppType, $id: ID, $name: String) {
         updateApp(data: {name: $name, appType: $appType}, where: {id: $id}) {
           id
         }
       }`,
-      "variables": {"id": allValues.id, "name": allValues.newName, "appType": allValues.newType}
-    }
+      variables: {
+        id: allValues.id,
+        name: allValues.newName,
+        appType: allValues.newType,
+      },
+    };
     const response = await axios({
       url: "https://api-eu-west-2.graphcms.com/v2/ckzd3vyci1bp301z14b775t0o/master",
-      method: 'post',
+      method: "post",
       headers: headers,
-      data: updateAppDetails
+      data: updateAppDetails,
     });
-    console.log(response)
-    if (response.status===200){
+    console.log(response);
+    if (response.status === 200) {
       setAllValues({
         ...allValues,
         name: allValues.newName,
-        type: allValues.newType
+        type: allValues.newType,
       });
-      setSaved(true)
+      setSaved(true);
+      toast.success("Project name updated successfully", {});
     }
-
-  }
+  };
 
   const warning = () => {
-    if (allValues.name!==allValues.newName||allValues.type!==allValues.newType){
+    if (
+      allValues.name !== allValues.newName ||
+      allValues.type !== allValues.newType
+    ) {
       return (
-        <Flex>
-          <Text>Unsaved Changes</Text>
-          <BlendIcon size="18px" iconify={hazardSymbol} className="icon" color="orange" />
-          <Button onClick={saveChanges} isLoading={true}>Save Changes</Button>
-        </Flex>
         
-      )
-    } else if (saved){
-      {console.log("Testing")}
+        <Flex alignItems="center">
+          <Text fontSize="xs">Unsaved Changes</Text>
+          <div style={{ marginLeft: 5 }}>
+            <BlendIcon
+              size="18px"
+              iconify={hazardSymbol}
+              className="icon"
+              color="orange"
+            />
+          </div>
+          <Button
+            ml="8px"
+            onClick={() => {
+              saveChanges();
+            }}
+            isLoading={true}
+          >
+            Save Changes
+          </Button>
+        </Flex>
+      );
+    } else if (saved) {
+      {
+        console.log("Testing");
+      }
 
       return (
-      <Flex>
-          <Text>Recent Changes Saved</Text>
-          <BlendIcon size="18px" iconify={successTick} className="icon" color="green" />
-          <Button disabled colorStyle="red">Save Changes</Button>
+        <Flex alignItems="center">
+          <Text fontSize="xs">Changes Saved</Text>
+          <div style={{ marginLeft: 5 }}>
+            <BlendIcon
+              size="18px"
+              iconify={successTick}
+              className="icon"
+              color="green"
+            />
+          </div>
+          <Button disabled colorStyle="red" ml="8px">
+            Save Changes
+          </Button>
         </Flex>
-      )
+      );
     } else {
       return (
-        <Flex>
-          <Text>No Unsaved Changes</Text>
-          <Button disabled colorStyle="red">Save Changes</Button>
-      </Flex>
-      )
+        <Flex alignItems="center">
+          <Text fontSize="xs">No Unsaved Changes</Text>
+          <Button disabled colorStyle="red" ml="8px">
+            Save Changes
+          </Button>
+        </Flex>
+      );
     }
+  };
+
+  const warningResources = () => {
+    if (
+      differenceDataSources
+    ) {
+      return (
+        <Flex alignItems="center">
+          
+          <Text fontSize="xs">Unsaved Changes</Text>
+          <div style={{ marginLeft: 5 }}>
+            <BlendIcon
+              size="18px"
+              iconify={hazardSymbol}
+              className="icon"
+              color="orange"
+            />
+          </div>
+          <Button
+            ml="8px"
+            onClick={() => {
+              saveChangesResources();
+              // setPermDataSource(...dataSource.concat(apiData))
+              // setSavedResources(true)
+            }}
+            
+          >
+            Save Changes
+          </Button>
+        </Flex>
+      );
+    } else if (savedResources) {
+      {
+        console.log("Testing");
+      }
+
+      return (
+        <Flex alignItems="center">
+          <Text fontSize="xs">Changes Saved</Text>
+          <div style={{ marginLeft: 5 }}>
+            <BlendIcon
+              size="18px"
+              iconify={successTick}
+              className="icon"
+              color="green"
+            />
+          </div>
+          <Button disabled colorStyle="red" ml="8px">
+            Save Changes
+          </Button>
+        </Flex>
+      );
+    } else {
+      return (
+        <Flex alignItems="center">
+          <Text fontSize="xs">No Unsaved Changes</Text>
+          <Button disabled colorStyle="red" ml="8px">
+            Save Changes
+          </Button>
+        </Flex>
+      );
+    }
+  };
+
+  let handleVersionChange = (e) => {
+    
+    let inputValue = e.target.value
+    var letters = /^[0-9|.]+$/
+    console.log("INPUT VALUE", inputValue)
+    console.log("INPUT VALUE", inputValue.slice(-1))
+    console.log("INPUT VALUE", inputValue.slice(-1)==='.')
+    console.log("INPUT VALUE", parseFloat([inputValue,'.0'].join('')))
+    if ((inputValue.slice(-1).match(letters))){
+      setAllValues({
+        ...allValues,
+        newVersion: inputValue
+
+      })
+    }
+
+
   }
+
+  const warningBuild = () => {
+    if (
+      allValues.version!==allValues.newVersion
+    ) {
+      return (
+        <Flex alignItems="center">
+          
+          <Text fontSize="xs">Unsaved Changes</Text>
+          <div style={{ marginLeft: 5 }}>
+            <BlendIcon
+              size="18px"
+              iconify={hazardSymbol}
+              className="icon"
+              color="orange"
+            />
+          </div>
+          <Button
+            ml="8px"
+            onClick={() => {
+              saveChangesBuild();
+              // setPermDataSource(...dataSource.concat(apiData))
+              // setSavedResources(true)
+            }}
+            
+          >
+            Save Changes
+          </Button>
+        </Flex>
+      );
+    } else if (savedBuild) {
+      {
+        console.log("Testing");
+      }
+
+      return (
+        <Flex alignItems="center">
+          <Text fontSize="xs">Changes Saved</Text>
+          <div style={{ marginLeft: 5 }}>
+            <BlendIcon
+              size="18px"
+              iconify={successTick}
+              className="icon"
+              color="green"
+            />
+          </div>
+          <Button disabled colorStyle="red" ml="8px">
+            Save Changes
+          </Button>
+        </Flex>
+      );
+    } else {
+      return (
+        <Flex alignItems="center">
+          <Text fontSize="xs">No Unsaved Changes</Text>
+          <Button disabled colorStyle="red" ml="8px">
+            Save Changes
+          </Button>
+        </Flex>
+      );
+    }
+  };
 
   const buttons = () => {
-    console.log(allValues)
-    if (allValues.newType==="App"){
+    console.log(allValues);
+    if (allValues.newType === "App") {
       return (
-        <Flex flexDirection="row" >
-        <Radio
-          fontSize="10px"
-          value="1"
-          onClick={()=>{setAllValues({...allValues,newType: "Widget"})}}
-        >
-          {i18n.__("widget")}
-        </Radio>
-        <Radio
-          checked
-          fontSize="10px"
-          value="2"
-          onClick={()=>{setAllValues({...allValues,newType: "App"})}}
-        >
-          {i18n.__("app")}
-        </Radio>
+        <Flex flexDirection="row" alignItems="center" mr="20px">
+          <Flex flexDirection="row" alignItems="center" mr="15px">
+            <Radio
+              fontSize="8px"
+              value="1"
+              onClick={() => {
+                setAllValues({ ...allValues, newType: "Widget" });
+              }}
+            />
+            <Text fontSize="xs">{i18n.__("widget")}</Text>
+          </Flex>
+          <Flex flexDirection="row" alignItems="center">
+            <Radio
+              checked
+              fontSize="10px"
+              value="2"
+              onClick={() => {
+                setAllValues({ ...allValues, newType: "App" });
+              }}
+            />
+            <Text fontSize="xs">Application</Text>
+          </Flex>
         </Flex>
-        
-      )
-
-    } else if (allValues.newType==="Widget"){
+      );
+    } else if (allValues.newType === "Widget") {
       return (
-        <Flex flexDirection="row" >
-        <Radio
-          checked
-          fontSize="10px"
-          value="1"
-          onClick={()=>{setAllValues({...allValues,newType: "Widget"})}}
-        >
-          {i18n.__("widget")}
-        </Radio>
-        <Radio
-          fontSize="10px"
-          value="2"
-          onClick={()=>{setAllValues({...allValues,newType: "App"})}}
-        >
-          {i18n.__("app")}
-        </Radio>
+        <Flex flexDirection="row" alignItems="center" mr="20px">
+          <Flex flexDirection="row" alignItems="center" mr="15px">
+            <Radio
+              checked
+              fontSize="10px"
+              value="1"
+              onClick={() => {
+                setAllValues({ ...allValues, newType: "Widget" });
+              }}
+            />
+            <Text fontSize="xs">{i18n.__("widget")}</Text>
+          </Flex>
+          <Flex flexDirection="row" alignItems="center">
+            <Radio
+              fontSize="10px"
+              value="2"
+              onClick={() => {
+                setAllValues({ ...allValues, newType: "App" });
+              }}
+            />
+            <Text fontSize="xs">Application</Text>
+          </Flex>
         </Flex>
-      )
-      }
-  }
+      );
+    }
+  };
 
-
-  const handleNameChange = (event) => setAllValues({
-    ...allValues,
-    // title: widgets.current[w].title,
-    newName: event.target.value
-  });
-
-
+  const handleNameChange = event =>
+    setAllValues({
+      ...allValues,
+      // title: widgets.current[w].title,
+      newName: event.target.value,
+    });
 
   const fetchApps = async e => {
-    try {    
-
-      // await newAppVersionMutation(API, appFields.appId, currentUser.prifinaID, {
-      //   name: appFields.name,
-      //   title: appFields.title,
-      //   identity: currentUser.identity,
-      //   identityPool: currentUser.identityPool,
-      //   //version: appFields.version,
-      // });
+    try {
       const repsonse = await axios({
         url: "https://api-eu-west-2.graphcms.com/v2/ckzd3vyci1bp301z14b775t0o/master",
-        method: 'post',
+        method: "post",
         headers: headers,
-        data: getAppsQuery
+        data: getAppsQuery,
       });
-      console.log(repsonse)
-      setData(repsonse.data.data.apps)
-      
-      
-      return(
-        data.length > 0 && (
-        <Table columns={Columns} data={data} />
-        )
-      )
+      console.log(repsonse);
+      setData(repsonse.data.data.apps);
+
+      return data.length > 0 && <Table columns={Columns} data={data} />;
 
       // history.push("/");
     } catch (e) {
       console.log("error ", e);
     }
-
-
   };
 
+  const saveChangesBuild = async() => {
+        const updateAppDetails = {
+          "operationName":"updateVersion",
+          "query": `
+          mutation updateVersion($id: ID, $version: Float) {
+            updateApp(data: {version: $version}, where: {id: $id}){
+              id
+            }
+          }
+          `,
+          "variables": {"id": allValues.id, "version": parseFloat(allValues.newVersion)}
+        }
+        const response = await axios({
+          url: "https://api-eu-west-2.graphcms.com/v2/ckzd3vyci1bp301z14b775t0o/master",
+          method: 'post',
+          headers: headers,
+          data: updateAppDetails
+        });
+        console.log(response)
+      
+    setAllValues({
+      ...allValues,
+      version: allValues.newVersion
 
+    })
+    setSavedBuild(true)
+    toast.success("Project build saved successfully", {});
 
-  const axios = require("axios");
+  }
+
+  const saveChangesResources = async() => {
+    const dataSources = apiData.data
+    let clonedArray = JSON.parse(JSON.stringify(dataSources))
+    clonedArray = dataSources.map(a => {return {...a}})
+    let clonedArray2 = JSON.parse(JSON.stringify(dataSources))
+    clonedArray2 = dataSources.map(a => {return {...a}})
+    let x=0
+    apiData.data.forEach(async data=>{
+      if(apiData.history.some(item => item.id === data.id)){
+        const updateAppDetails = {
+          "operationName":"updateAppDetails",
+          "query": `
+          mutation updateAppDetails($id: ID, $details: String, $isAdded: Boolean) {
+            updateApi(data: {desc: $details, added: $isAdded}, where: {id: $id}) {
+              id
+            }
+          }`,
+          "variables": {"id": data.id, "details": data.details, "isAdded": data.isAdded}
+        }
+        const response = await axios({
+          url: "https://api-eu-west-2.graphcms.com/v2/ckzd3vyci1bp301z14b775t0o/master",
+          method: 'post',
+          headers: headers,
+          data: updateAppDetails
+        });
+        console.log(response)
+      } else {
+        const createAppDetails = {
+          "operationName":"createAppDetails",
+          "query": `
+          mutation createAppDetails($id: ID, $url: String, $details: String, $isAdded: Boolean) {
+            createApi(data: {app: {connect: {id: $id}},url: $url, desc: $details, added: $isAdded}) {
+              id
+            }
+          }`,
+          "variables": {"id": allValues.id, "url": data.text, "details": data.details, "isAdded": data.isAdded}
+        }
+        const response = await axios({
+          url: "https://api-eu-west-2.graphcms.com/v2/ckzd3vyci1bp301z14b775t0o/master",
+          method: 'post',
+          headers: headers,
+          data: createAppDetails
+        });
+        clonedArray[x].id=response.data.data.createApi.id
+        clonedArray2[x].id=response.data.data.createApi.id
+        console.log(response)
+      }
+      x++
+
+    })
+    setApiData({
+      data: clonedArray,
+      history: clonedArray2
+
+    })
+    setSavedResources(true)
+    setDifferenceDataSources(false)
+    toast.success("Project data sources saved successfully", {});
+
+  }
 
   const headers = {
     "content-type": "application/json",
-      "Authorization": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImdjbXMtbWFpbi1wcm9kdWN0aW9uIn0.eyJ2ZXJzaW9uIjozLCJpYXQiOjE2NDQ0MzcyNTksImF1ZCI6WyJodHRwczovL2FwaS1ldS13ZXN0LTIuZ3JhcGhjbXMuY29tL3YyL2NremQzdnljaTFicDMwMXoxNGI3NzV0MG8vbWFzdGVyIiwiaHR0cHM6Ly9tYW5hZ2VtZW50LW5leHQuZ3JhcGhjbXMuY29tIl0sImlzcyI6Imh0dHBzOi8vbWFuYWdlbWVudC5ncmFwaGNtcy5jb20vIiwic3ViIjoiMzVhNmMxNTMtMmQxNS00ZjE2LWE4OTgtMTgyYTBlYzliY2I5IiwianRpIjoiY2t6ZnpoaHdpMTZhYTAxejIweWZmZms5YiJ9.f3nj1nk7m7mwEKx9PMafsbG9balRtuRl91bV8BBbqKceoS3C-HELxFpbbn4Y4zQL5I_7eI0uheeXaiM0vDkXyOXA11Y_wBgQBD4eYyQwtEB5SsO7p7ZgVXqw3lK7h4ojP2QW1LbgbX1RLK_4wqRz7ItK1HT5ve5SGuUiiBaQJY2nBK5ElMwJiS4cSzHwb3K7c9vOsIO92XLlDsyUR7A2ABGcovITaQ6jTY4Udh6hvjIqQk4hhfOthmAST_Mpb4bIzqkMVs8EEPWh_9z8WnSf-PS35B4Wh9xOLXrLSL58CLV4QZodVV3Tor3BOS93SpJnF14tFJ1XC6X9zyty7gqTLj6dxGzTK9ru501I4wgc3W4lVtdDciLy4Qe5_j9kkQdMnJb2PbmV24SOsNyTgOb5n0yQFcCSy_DGAf4CWyrXzzrPIM5VrbL_dOe2Hcui1O7xKf74CuQYJRDt08MtJXgPEFDdpfidr7riBqu6DB_7L2RcsrerOsiy3GSr_9eY2I9x-Pv8NMBeNsrKS_M-j1n0PbwamgQKHYXrGMQf1LXNHRyiLAtHYI0GTL-6Xx0wNfiqUc_GXvsd0LWqAtfFClIThFpJAER-rOcXCn7eaRY2Gnoi7JiCx_xw0qbxQ1CFZlPB_Xgzhj-xG7oRPucXsmXlzeAxTg-rUsj_zZkrHX2D3iY"
+    Authorization:
+      "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImdjbXMtbWFpbi1wcm9kdWN0aW9uIn0.eyJ2ZXJzaW9uIjozLCJpYXQiOjE2NDQ0MzcyNTksImF1ZCI6WyJodHRwczovL2FwaS1ldS13ZXN0LTIuZ3JhcGhjbXMuY29tL3YyL2NremQzdnljaTFicDMwMXoxNGI3NzV0MG8vbWFzdGVyIiwiaHR0cHM6Ly9tYW5hZ2VtZW50LW5leHQuZ3JhcGhjbXMuY29tIl0sImlzcyI6Imh0dHBzOi8vbWFuYWdlbWVudC5ncmFwaGNtcy5jb20vIiwic3ViIjoiMzVhNmMxNTMtMmQxNS00ZjE2LWE4OTgtMTgyYTBlYzliY2I5IiwianRpIjoiY2t6ZnpoaHdpMTZhYTAxejIweWZmZms5YiJ9.f3nj1nk7m7mwEKx9PMafsbG9balRtuRl91bV8BBbqKceoS3C-HELxFpbbn4Y4zQL5I_7eI0uheeXaiM0vDkXyOXA11Y_wBgQBD4eYyQwtEB5SsO7p7ZgVXqw3lK7h4ojP2QW1LbgbX1RLK_4wqRz7ItK1HT5ve5SGuUiiBaQJY2nBK5ElMwJiS4cSzHwb3K7c9vOsIO92XLlDsyUR7A2ABGcovITaQ6jTY4Udh6hvjIqQk4hhfOthmAST_Mpb4bIzqkMVs8EEPWh_9z8WnSf-PS35B4Wh9xOLXrLSL58CLV4QZodVV3Tor3BOS93SpJnF14tFJ1XC6X9zyty7gqTLj6dxGzTK9ru501I4wgc3W4lVtdDciLy4Qe5_j9kkQdMnJb2PbmV24SOsNyTgOb5n0yQFcCSy_DGAf4CWyrXzzrPIM5VrbL_dOe2Hcui1O7xKf74CuQYJRDt08MtJXgPEFDdpfidr7riBqu6DB_7L2RcsrerOsiy3GSr_9eY2I9x-Pv8NMBeNsrKS_M-j1n0PbwamgQKHYXrGMQf1LXNHRyiLAtHYI0GTL-6Xx0wNfiqUc_GXvsd0LWqAtfFClIThFpJAER-rOcXCn7eaRY2Gnoi7JiCx_xw0qbxQ1CFZlPB_Xgzhj-xG7oRPucXsmXlzeAxTg-rUsj_zZkrHX2D3iY",
   };
   const getAppsQuery = {
     "operationName":"getApps",
@@ -349,6 +633,20 @@ const Main = ({
         appStatus
         version
         updatedAt
+        dataSource {
+          __typename
+          ... on Api {
+            id
+            url
+            desc
+            added
+          }
+          ... on UserCloud {
+            id
+            title
+            desc
+          }
+        }
       }
     }`,
   "variables": ""}
@@ -367,7 +665,7 @@ const Main = ({
   //   }
   // ]
 
-  
+  //---------------------------------------------------Dylan's work
 
   const appTypes = ["Widget", "App"];
 
@@ -375,9 +673,13 @@ const Main = ({
     name: "",
     id: "",
     type: "",
+    version: "",
     newName: "",
-    newType: ""
+    newType: "",
+    newVersion: "",
   });
+
+
 
   const onRowClick = (state, rowInfo, column, instance) => {
     return {
@@ -394,17 +696,71 @@ const Main = ({
           <Text
             onClick={() => {
               setStep(3);
-              setSaved(false)
-              setAllValues({
-                ...allValues,
-                // title: widgets.current[w].title,
-                name: props.cell.value,
-                newName: props.cell.value,
-                id: props.row.values.id,
-                type: props.row.values.appType,
-                newType: props.row.values.appType
-              });
+              setSaved(false);
+              // setAllValues({
+              //   ...allValues,
+              //   // title: widgets.current[w].title,
+              //   name: props.cell.value,
+              //   newName: props.cell.value,
+              //   id: props.row.values.id,
+              //   type: props.row.values.appType,
+              //   newType: props.row.values.appType,
+              // });
+              if (props.row.values.version===null){
+                setAllValues({
+                  ...allValues,
+                  // title: widgets.current[w].title,
+                  name: props.cell.value,
+                  newName: props.cell.value,
+                  id: props.row.values.id,
+                  type: props.row.values.appType,
+                  newType: props.row.values.appType,
+                  version: "",
+                  newVersion: ""
+                });
 
+              } else {
+                setAllValues({
+                  ...allValues,
+                  // title: widgets.current[w].title,
+                  name: props.cell.value,
+                  newName: props.cell.value,
+                  id: props.row.values.id,
+                  type: props.row.values.appType,
+                  newType: props.row.values.appType,
+                  version: props.row.values.version.toString(),
+                  newVersion: props.row.values.version.toString()
+                });
+              }
+
+              setSaved(false)
+              setSavedBuild(false)
+              setSavedResources(false)
+              console.log("test - ", props.row.values.version.toString())
+              let x = []
+              props.row.values.dataSource.map(dataSource => {
+                if (dataSource.__typename==="Api")
+                x.push({"text": dataSource.url, "isAdded":dataSource.added, "id": dataSource.id, "details": dataSource.desc})
+              })
+              //Deepcloning
+              let clonedArray = JSON.parse(JSON.stringify(x))
+              clonedArray = x.map(a => {return {...a}})
+
+
+              
+              if (x.length===0){
+
+                setApiData({
+                  data: [],
+                  history: []
+                })
+              } else {
+                setApiData({
+                  data: x,
+                  history: clonedArray
+                })
+                
+              }
             }}
           >
             {props.cell.value}
@@ -414,7 +770,8 @@ const Main = ({
     },
     {
       Header: "App ID",
-      accessor: "appId",
+      // accessor: "appId",
+      accessor: "id",
       Cell: props => {
         return <Text>{props.cell.value}</Text>;
       },
@@ -450,9 +807,14 @@ const Main = ({
       },
     },
     {
-      Header: "ID",
-      accessor: "id"
+      Header: "dataSource",
+      accessor: "dataSource"
     },
+    
+    // {
+    //   Header: "ID",
+    //   accessor: "id",
+    // },
     {
       Header: () => null, // No header
       id: "sendApp", // It needs an ID
@@ -491,12 +853,11 @@ const Main = ({
       //   nextVersion: version,
       //   status: 1, //received
       // }).then(res => {
-        setUpload(false);
+      setUpload(false);
       // });
     } else {
       setUpload(false);
     }
-
   };
 
   const [activeTab, setActiveTab] = useState(0);
@@ -524,14 +885,19 @@ const Main = ({
   };
 
   const [dataSource, setDataSource] = useState([]);
-  const [apiData, setApiData] = useState([]);
+  
+  
+  const [apiData, setApiData] = useState({
+      data: [],
+      history: []
+  });
 
   console.log("CLOUD DATA", dataSource);
   console.log("API DATA", apiData);
 
   let addedDataSources = dataSource
-    .concat(apiData)
-    .filter(key => key.isAdded == true);
+    .concat(apiData.data)
+    .filter(key => key.isAdded === true);
   console.log("ADDED DATA", addedDataSources);
 
   const [addedDataSources2, setAddedDataSources2] = useState([]);
@@ -560,31 +926,58 @@ const Main = ({
   //////API
 
   const addApiSource = text => {
-    const newSourceData = [...apiData, { text }];
-    setApiData(newSourceData);
+    const newSourceData = [...apiData.data, { text, "isAdded": false }];
+    setApiData({
+      data: newSourceData,
+      history: [...apiData.history]
+    });
   };
 
   const removeApiSource = index => {
-    const newSourceData = [...apiData];
+    const newSourceData = [...apiData.data];
     newSourceData.splice(index, 1);
-    setApiData(newSourceData);
+    setApiData({
+      data: newSourceData,
+      history: [...apiData.history]
+    });
   };
 
   const completeApiSource = index => {
-    const newSourceData = [...apiData];
+    const newSourceData = [...apiData.data];
     newSourceData[index].isAdded = true;
-    setApiData(newSourceData);
+    console.log(newSourceData)
+    setApiData({
+      data: newSourceData,
+      history: [...apiData.history]
+    });
+    console.log(apiData)
   };
 
   ////common data sources
 
   const uncompleteDataSource = index => {
-    const newSourceData = [...addedDataSources];
+    const newSourceData = [...apiData.data];
     newSourceData[index].isAdded = false;
     setAddedDataSources2(newSourceData);
   };
 
-  const [step, setStep] = useState(3);
+  const addDataSourceDetails = (index,text) => {
+    const newSourceData = [...apiData.data];
+    newSourceData[index].details = text;
+    // console.log("Test")
+  
+    setApiData({
+      data: newSourceData,
+      history: [...apiData.history]
+    });
+
+    // submitAPISources(index);
+    // console.log(newSourceData)
+    // console.log("3")
+
+  };
+
+  const [step, setStep] = useState(0);
 
   switch (step) {
     case 0:
@@ -610,8 +1003,6 @@ const Main = ({
     setProjectDialogOpen(false);
     e.preventDefault();
   };
-
-
 
   const onDialogClick = async e => {
     ///...further logic on adding data source data
@@ -640,35 +1031,61 @@ const Main = ({
     {
       id: 2,
       label: i18n.__("resources"),
-      icon: mdiBookOpenVariant
+      icon: mdiBookOpenVariant,
     },
   ];
 
-  useEffect(()=>{
-    switch (step){
+  useEffect(() => {
+    switch (step) {
       case 2:
         fetchApps();
         break;
-
     }
-    
+  }, [step, upload]);
 
-  },[step, upload])
-
-  useEffect(()=>{
-    console.log(allValues)
-    if (allValues.name!==allValues.newName||allValues.type!==allValues.newType){
-      return console.log("true")
+  useEffect(() => {
+    console.log(allValues);
+    if (
+      allValues.name !== allValues.newName ||
+      allValues.type !== allValues.newType
+    ) {
+      return console.log("true");
     } else {
-      return console.log("false")
+      return console.log("false");
     }
-    
+  }, [allValues.newName]);
 
-  },[allValues.newName])
+  useEffect(() => {
+    // console.log("all", dataSource.concat(apiData))
+    let x = true;
+    let allSources = dataSource.concat(apiData.data)
+    if (allSources.length!==apiData.history.length) x=false
+    for (var i = 0; i < allSources.length&&x; ++i) {
+      if (allSources[i].text!==apiData.history[i].text){
+        console.log("Different")
+        x = false
+      } else if (allSources[i].id!==apiData.history[i].id){
+        console.log("Different")
+        x = false
+      } else if (allSources[i].isAdded!==apiData.history[i].isAdded){
+        console.log("Different")
+        x = false
+      } else if (allSources[i].details!==apiData.history[i].details){
+        console.log("Different")
+        x = false
+      }
+    }
+
+    if (x){
+      console.log("SAME")
+    } else {
+      console.log("DIFF")
+    }
+    setDifferenceDataSources(!x)
+  }, [addedDataSources]);
 
   return (
     <React.Fragment>
-      
       <DevConsoleSidebar items={items} />
       <C.NavbarContainer bg="baseWhite">
         <DevConsoleLogo className="appStudio" />
@@ -767,7 +1184,7 @@ const Main = ({
                   // isOpen={projectDialogOpen}
                 />
               )}
-              <Flex paddingTop="48px" paddingLeft="65px">
+              <Flex paddingTop="48px" paddingLeft="44px">
                 <Flex
                   bg="baseMuted"
                   flexDirection="column"
@@ -804,9 +1221,7 @@ const Main = ({
                             <Text m={2}>{i18n.__("noApps")}</Text>
                           </div>
                         )}
-                        {/* {
-                          fetchApps()
-                        } */}
+                        {/* {fetchApps()} */}
                         {data.length > 0 && (
                           <Table columns={Columns} data={data} />
                         )}
@@ -819,16 +1234,24 @@ const Main = ({
           )}
           {step === 3 && (
             <>
-              <Flex flexDirection="column">
-                <Flex
-                  justifyContent="space-between"
-                  alignItems="center"
-                  paddingLeft="22px"
-                  paddingRight="24px"
-                  height="64px"
-                  bg="baseMuted"
-                >
-                  <Flex alignItems="center">
+              <Flex
+                className="headerActionBar"
+                justifyContent="space-between"
+                alignItems="center"
+                paddingLeft="21px"
+                paddingRight="8px"
+                minHeight="64px"
+                // bg="baseMuted"
+                bg="#E0EAFF"
+                // position="fixed"
+                position="sticky"
+                top="0"
+                zIndex={1}
+                // width="1152px"
+                // width="inherit"
+              >
+                <Flex>
+                  <Flex alignItems="center" mr="20px">
                     <BlendIcon
                       iconify={mdiArrowLeft}
                       width="24px"
@@ -836,647 +1259,363 @@ const Main = ({
                         setStep(2);
                       }}
                     />
-                    <Text ml="16px">{allValues.name}</Text>
+                    {/* <Text ml="16px">{allValues.name}</Text> */}
                   </Flex>
-                  <Flex alignItems="center">
-                    <Button mr="17px">{i18n.__("launchSandbox")}</Button>
-                    <BlendIcon
-                      iconify={bxsInfoCircle}
-                      width="13px"
-                      color={colors.baseMuted}
-                    />
+                  <Input
+                    width="200px"
+                    value={allValues.newName}
+                    onChange={handleNameChange}
+                  />
+
+                  <Flex ml="20px">
+                    {buttons()}
+                    {warning()}
                   </Flex>
                 </Flex>
-                <Flex bg="brandAccent" height="95px" />
-                <div
+                <Button>{i18n.__("launchSandbox")}</Button>
+              </Flex>
+              <Flex
+                flexDirection="column"
+                paddingLeft="44px"
+                paddingRight="44px"
+                paddingTop="50px"
+                paddingBottom="100px"
+              >
+                <Flex flexDirection="column" width="426px">
+                  <Text textStyle="h2">Project resources</Text>
+                  <Text fontSize="15px">
+                    Add your .Zip build deployment package and information
+                    regarding your apps data useage here to prepare for handoff
+                    to a nominated publisher account.
+                  </Text>
+                </Flex>
+                <hr
                   style={{
-                    overflow: "hidden",
-                    paddingTop: 38,
-                    paddingLeft: 65,
-                    paddingRight: 30,
+                    borderTop: "1px solid #FFFFFF",
+                    width: "100%",
                   }}
+                />
+                <Flex
+                  className="buildContainer"
+                  flexDirection="column"
+                  paddingLeft="8px"
+                  paddingRight="8px"
+                  paddingTop="11px"
                 >
-                  <Tabs
-                    activeTab={activeTab}
-                    onClick={tabClick}
-                    variant={"line"}
+                  <Flex justifyContent="space-between">
+                    <Text textStyle="h4">Build deployment</Text>
+                    <Flex alignItems="center">
+                      {warningBuild()}
+                    </Flex>
+                  </Flex>
+                  <Flex
+                    justifyContent="space-between"
+                    alignItems="center"
+                    mt="20px"
                   >
-                    <TabList>
-                      <Tab
+                    <Text textStyle="h3" color="white">
+                      Build deployment
+                    </Text>
+                    <Box>
+                      <Text fontSize="sm">App ID</Text>
+                      <Input
+                        width="684px"
+                        label="text"
+                        value={allValues.id}
+                        color="black"
+                        disabled
+                      />
+                    </Box>
+                  </Flex>
+                  <Flex
+                    justifyContent="space-between"
+                    alignItems="center"
+                    mt="30px"
+                  >
+                    <Box width="320px">
+                      <Text textStyle="h5">Version number</Text>
+                      <Text fontSize="13px">
+                        This version number is for your internal use so can
+                        follow whatever logic you choose.
+                      </Text>
+                    </Box>
+                    <Box marginLeft="10px">
+                      <Text fontSize="sm">Version number</Text>
+                      <Input width="684px" label="text" value={allValues.newVersion} onChange={handleVersionChange}/>
+                    </Box>
+                  </Flex>
+                  <Flex
+                    justifyContent="space-between"
+                    // alignItems="center"
+                    mt="30px"
+                  >
+                    <Box width="320px">
+                      <Text textStyle="h5">Build deployment package</Text>
+                      <Text fontSize="13px">
+                        The build deployment package is a packaged version of
+                        your local build. It must include:
+                      </Text>
+                      <Text fontSize="13px">1. Your Prifina App ID</Text>
+                      <Text fontSize="13px">
+                        2. Come in a .zip with a maximum file size of 5mb
+                      </Text>
+                    </Box>
+                    <Box ml="5px">
+                      <Text fontSize="sm">Build deployment package</Text>
+                      <div
                         style={{
-                          height: 37,
-                          justifyContent: "center",
-                          borderTopLeftRadius: 10,
-                          borderTopRightRadius: 10,
+                          border: "1px dashed black",
+                          width: 684,
+                          height: 132,
+                          borderRadius: 4,
+                          background: "lightgray",
                         }}
-                      >
-                        <Flex alignItems="center">
-                          <BlendIcon iconify={mdiPowerPlug} />
-                          <Text ml="8px">{i18n.__("sandboxTesting")}</Text>
-                        </Flex>
-                      </Tab>
-                      <Tab
-                        style={{
-                          height: 37,
-                          justifyContent: "center",
-                          borderTopLeftRadius: 10,
-                          borderTopRightRadius: 10,
-                        }}
-                      >
-                        <Flex alignItems="center">
-                          <BlendIcon iconify={baselineWeb} />
-                          <Text ml="8px">{i18n.__("buildAssets")}</Text>
-                        </Flex>
-                      </Tab>
-                      <Tab
-                        style={{
-                          height: 37,
-                          justifyContent: "center",
-                          borderTopLeftRadius: 10,
-                          borderTopRightRadius: 10,
-                        }}
-                      >
-                        <Flex alignItems="center">
-                          <BlendIcon iconify={mdiZipBoxOutline} />
-                          <Text ml="8px">{i18n.__("uploads")}</Text>
-                        </Flex>
-                      </Tab>
-                    </TabList>
-                    <TabPanelList>
-                      <TabPanel>
-                        <div
-                          style={{
-                            overflow: "auto",
-                            background: colors.baseMuted,
-                            borderRadius: 10,
-                          }}
-                        >
-                          <Flex
-                            ml="41px"
-                            flexDirection="column"
-                            paddingTop="30px"
-                          >
-                            <Text color="textPrimary" fontSize="xl">
-                              {i18n.__("sandboxTesting")}
-                            </Text>
-                            <Box mt="21px" width="493px" mb="49px">
-                              <Text color="textPrimary">
-                                {i18n.__("sandboxTestingText")}
-                              </Text>
-                            </Box>
-                          </Flex>
+                      />
+                    </Box>
+                  </Flex>
+                </Flex>
+                <hr
+                  style={{
+                    borderTop: "1px solid #FFFFFF",
+                    width: "100%",
+                  }}
+                />
+                <Flex
+                  className="buildContainer"
+                  flexDirection="column"
+                  paddingLeft="8px"
+                  paddingRight="8px"
+                  paddingTop="11px"
+                >
+                  <Flex justifyContent="space-between">
+                    <Text textStyle="h3">Data resources</Text>
+                    <Flex alignItems="center">
+                      {/* <Text fontSize="xs">No changes detected</Text> */}
+                      {/* <Button ml="17px" disabled>
+                        Save Changes
+                      </Button> */}
+                      {warningResources()}
+                    </Flex>
+                  </Flex>
+                  <Flex
+                    justifyContent="space-between"
+                    alignItems="flex-start"
+                    mt="20px"
+                  >
+                    <Box width="320px">
+                      <Text fontSize="13px">
+                        Let us know how your application uses data by logging
+                        your sources (or lack of) here.
+                      </Text>
+                      <Text mt="15px" fontSize="13px">
+                        This information helps us provide quality support and
+                        helps direct our product roadmap.
+                      </Text>
+                    </Box>
 
-                          <Flex
+                    <div
+                      style={{
+                        overflow: "hidden",
+                        // background: colors.baseMuted,
+                        // paddingTop: 16,
+                        // paddingBottom: 16,
+                        // paddingLeft: 40,
+                        // paddingRight: 40,
+                        // borderRadius: 10,
+                        width: 700,
+                      }}
+                    >
+                      <Tabs
+                        activeTab={activeTab3}
+                        onClick={tabClick3}
+                        style={{ height: "100%" }}
+                        variant={"line"}
+                      >
+                        <TabList>
+                          <Tab>
+                            <Text>{i18n.__("publicApi")}</Text>
+                          </Tab>
+                          <Tab>
+                            <Text>{i18n.__("prifinaUserCloud")}</Text>
+                          </Tab>
+                          <Tab>
+                            <Text>{i18n.__("noData")}</Text>
+                          </Tab>
+                        </TabList>
+                        <TabPanelList style={{ backgroundColor: null }}>
+                          <TabPanel
                             style={{
-                              border: "1px solid #3F3A4F",
-                              width: 999,
-                              borderTopRightRadius: 10,
-                              borderTopLeftRadius: 10,
-                              borderBottom: 0,
-                              marginRight: 16,
-                              marginLeft: 16,
-                              paddingLeft: 32,
-                              paddingRight: 34,
-                              position: "relative",
+                              height: "100vh",
+                              paddingBottom: "50px",
+                              overflow: "auto",
                             }}
-                            flexDirection="column"
                           >
-                            <Text color="textPrimary" mt="35px">
-                              {i18n.__("launchSandboxSession")}
-                            </Text>
-                            <Flex
-                              alt="cards"
-                              flexDirection="column"
-                              style={{
-                                position: "absolute",
-                                right: 84,
-                                top: -28,
-                              }}
-                            >
-                              <Flex
-                                width="403px"
-                                height="35px"
-                                bg="brandAccent"
-                                borderRadius="5px"
-                                alignItems="center"
-                                mb="4px"
-                              >
-                                <Text ml="16px" mr="18px" fontSize="xs">
-                                  1
-                                </Text>
-                                <Text fontSize="xs">
-                                  {i18n.__("copyYourAppId")}
-                                </Text>
+                            <div style={{ overflow: "auto" }}>
+                              <Flex>
+                                <ApiForm addApi={addApiSource} />
                               </Flex>
-                              <Flex
-                                width="403px"
-                                height="35px"
-                                bg="brandAccent"
-                                borderRadius="5px"
-                                alignItems="center"
-                                mb="4px"
-                              >
-                                <Text ml="16px" mr="18px" fontSize="xs">
-                                  2
-                                </Text>
-                                <Text fontSize="xs">
-                                  {i18n.__("addToLocalBuild")}
-                                </Text>
-                              </Flex>
-                              <Flex
-                                width="403px"
-                                height="35px"
-                                bg="brandAccent"
-                                borderRadius="5px"
-                                alignItems="center"
-                                mb="4px"
-                              >
-                                <Text ml="16px" mr="18px" fontSize="xs">
-                                  3
-                                </Text>
-                                <Text fontSize="xs">
-                                  {i18n.__("getRemoteLink")}
-                                </Text>
-                              </Flex>
-                              <Flex
-                                width="403px"
-                                height="35px"
-                                bg="brandAccent"
-                                borderRadius="5px"
-                                alignItems="center"
-                              >
-                                <Text ml="16px" mr="18px" fontSize="xs">
-                                  4
-                                </Text>
-                                <Text fontSize="xs">
-                                  {i18n.__("fillOutForm")}
-                                </Text>
-                              </Flex>
-                              <Flex alignItems="baseline">
-                                <Text
-                                  mt="11px"
-                                  color="textPrimary"
-                                  fontSize="xs"
-                                  mr="2px"
-                                >
-                                  {i18n.__("readMoreGuide")}
-                                </Text>
-                                <Button variation="link">
-                                  {i18n.__("prfinaDocsButton")}
-                                </Button>
-                              </Flex>
-                            </Flex>
-                            <Flex mt="42px" alignItems="center" mb="19px">
-                              <Text color="textPrimary" fontSize="xs" mr="8px">
-                                {i18n.__("appId")}
-                              </Text>
-                              <BlendIcon
-                                iconify={bxsInfoCircle}
-                                width="13px"
-                                color={colors.baseMuted}
-                              />
-                            </Flex>
-                            <C.StyledInput value={allValues.id} disabled />
-                            <Flex
-                              justifyContent="space-between"
-                              mt="43px"
-                              width="748px"
-                            >
-                              <Flex flexDirection="column">
-                                <Text mb="16px" fontSize="xs">
-                                  {i18n.__("projectName")}
-                                </Text>
-                                <C.StyledInput value={allValues.newName} onChange={handleNameChange}/>
-                              </Flex>
-                              <Flex flexDirection="column">
-                                <Text mb="16px" fontSize="xs">
-                                  {i18n.__("remoteLink")}
-                                </Text>
-                                {buttons()}
-                                <Flex flexDirection="column">
-                                  {warning()}
-                                
-                                </Flex>
 
-                              </Flex>
-                            </Flex>
-                            <Flex
-                              justifyContent="space-between"
-                              mt="43px"
-                              width="748px"
-                            >
-                              <Flex flexDirection="column">
-                                <Text mb="16px" fontSize="xs">
-                                  {i18n.__("projectName")}
-                                </Text>
-                                <C.StyledInput placeholder={allValues.name} />
-                              </Flex>
-                              <Flex flexDirection="column">
-                                <Text mb="16px" fontSize="xs">
-                                  {i18n.__("remoteLink")}
-                                </Text>
-                                <C.StyledInput
-                                  placeholder={i18n.__("remoteLink")}
-                                />
-                              </Flex>
-                            </Flex>
-                            <Flex position="absolute" right="32px" bottom="0px">
-                              <Button size="sm">
-                                {i18n.__("launchSandbox")}
-                              </Button>
-                            </Flex>
-                          </Flex>
-                        </div>
-                      </TabPanel>
-                      <TabPanel>
-                        {/* SECOND TABS */}
-                        <div style={{ overflow: "hidden" }}>
-                          <Tabs
-                            activeTab={activeTab2}
-                            onClick={tabClick2}
-                            style={{ height: "100%" }}
-                            variant={"line"}
-                          >
-                            <TabList>
-                              <Tab>
-                                <Text>{i18n.__("dataUsage")}</Text>
-                              </Tab>
-                              <Tab>
-                                <Text>{i18n.__("buildFiles")}</Text>
-                              </Tab>
-                            </TabList>
-                            <TabPanelList style={{ backgroundColor: null }}>
-                              <TabPanel
-                                style={{
-                                  height: "100vh",
-                                  paddingBottom: "50px",
-                                  overflow: "auto",
-                                }}
-                              >
-                                <div style={{ overflow: "auto" }}>
-                                  <Text textStyle="h3" mb="15px">
-                                    {i18n.__("dataUsage")}
-                                  </Text>
-                                  <Box width="470px">
-                                    <Text textStyle="h6" mb="15px">
-                                      {i18n.__("dataUsageText")}
-                                    </Text>
-                                  </Box>
-                                  {/* THIRD TABS */}
-                                  <div
+                              {/* Box with state change */}
+                              <Flex>
+                                {apiData.data.length > 0 && (
+                                  <Flex
+                                    width="100%"
+                                    flexDirection="column"
+                                    padding="10px"
                                     style={{
-                                      overflow: "hidden",
-                                      background: colors.baseMuted,
-                                      paddingTop: 16,
-                                      paddingBottom: 16,
-                                      paddingLeft: 40,
-                                      paddingRight: 40,
+                                      marginTop: 15,
                                       borderRadius: 10,
                                     }}
                                   >
-                                    <Tabs
-                                      activeTab={activeTab3}
-                                      onClick={tabClick3}
-                                      style={{ height: "100%" }}
-                                      variant={"line"}
-                                    >
-                                      <TabList>
-                                        <Tab>
-                                          <Text>{i18n.__("publicApi")}</Text>
-                                        </Tab>
-                                        <Tab>
-                                          <Text>
-                                            {i18n.__("prifinaUserCloud")}
-                                          </Text>
-                                        </Tab>
-                                        <Tab>
-                                          <Text>{i18n.__("noData")}</Text>
-                                        </Tab>
-                                      </TabList>
-                                      <TabPanelList
-                                        style={{ backgroundColor: null }}
-                                      >
-                                        <TabPanel
-                                          style={{
-                                            height: "100vh",
-                                            paddingBottom: "50px",
-                                            overflow: "auto",
-                                          }}
-                                        >
-                                          <div style={{ overflow: "auto" }}>
-                                            <Flex>
-                                              <ApiForm addApi={addApiSource} />
-                                            </Flex>
-
-                                            {/* Box with state change */}
-                                            <Flex>
-                                              {apiData.length > 0 && (
-                                                <Flex
-                                                  width="100%"
-                                                  flexDirection="column"
-                                                  padding="10px"
-                                                  style={{
-                                                    marginTop: 15,
-                                                    borderRadius: 10,
-                                                  }}
-                                                >
-                                                  <Text
-                                                    textStyle="h6"
-                                                    mb="10px"
-                                                  >
-                                                    {i18n.__(
-                                                      "chooseToAddSources",
-                                                    )}
-                                                  </Text>
-                                                  <Flex>
-                                                    <Flex flexDirection="column">
-                                                      {apiData.map(
-                                                        (event, index) => (
-                                                          <AddRemoveDataSources
-                                                            key={index}
-                                                            index={index}
-                                                            dataSource={event}
-                                                            removeDataSource={
-                                                              removeApiSource
-                                                            }
-                                                            completeDataSource={
-                                                              completeApiSource
-                                                            }
-                                                          />
-                                                        ),
-                                                      )}
-                                                    </Flex>
-                                                  </Flex>
-                                                </Flex>
-                                              )}
-                                            </Flex>
-                                          </div>
-                                        </TabPanel>
-                                        <TabPanel>
-                                          <div style={{ overflow: "auto" }}>
-                                            <Flex>
-                                              <DataSourceForm
-                                                addDataSource={addDataSource}
-                                                // addFunctions={addFunction}
-                                              />
-                                            </Flex>
-                                            {/* Box with state change */}
-                                            <Flex>
-                                              {dataSource.length > 0 && (
-                                                <Flex
-                                                  width="100%"
-                                                  flexDirection="column"
-                                                  padding="10px"
-                                                  style={{
-                                                    backgroundColor:
-                                                      colors.baseMuted,
-                                                    marginTop: 15,
-                                                    borderRadius: 10,
-                                                  }}
-                                                >
-                                                  <Text
-                                                    textStyle="h6"
-                                                    mt="10px"
-                                                    mb="10px"
-                                                  >
-                                                    {i18n.__(
-                                                      "dataConectorResults",
-                                                    )}
-                                                  </Text>
-
-                                                  <Flex>
-                                                    <Flex flexDirection="column">
-                                                      {dataSource.map(
-                                                        (event, index) => (
-                                                          <>
-                                                            <AddRemoveDataSources
-                                                              key={index}
-                                                              index={index}
-                                                              dataSource={event}
-                                                              removeDataSource={
-                                                                removeDataSource
-                                                              }
-                                                              completeDataSource={
-                                                                completeDataSource
-                                                              }
-                                                            />
-                                                            <div>
-                                                              {event.functions}
-                                                            </div>
-                                                          </>
-                                                        ),
-                                                      )}
-                                                    </Flex>
-                                                  </Flex>
-                                                </Flex>
-                                              )}
-                                            </Flex>
-                                          </div>
-                                        </TabPanel>
-                                        <TabPanel>
-                                          <div style={{ overflow: "auto" }}>
-                                            <Flex>
-                                              <Box
-                                                width="426px"
-                                                height="76px"
-                                                borderRadius="6px"
-                                                paddingLeft="10px"
-                                                bg={colors.baseLinkHover}
-                                                style={{
-                                                  border: `2px solid ${colors.baseLink}`,
-                                                }}
-                                              >
-                                                <Text>
-                                                  {i18n.__("noDataText")}
-                                                </Text>
-                                                <Link>
-                                                  {i18n.__("learnMoreHere")}
-                                                </Link>
-                                              </Box>
-                                              <Flex ml="10px">
-                                                {/* <CheckboxStateful /> */}
-                                              </Flex>
-                                            </Flex>
-                                          </div>
-                                        </TabPanel>
-                                      </TabPanelList>
-                                    </Tabs>
-                                  </div>
+                                    <Text textStyle="h6" mb="10px">
+                                      {i18n.__("chooseToAddSources")}
+                                    </Text>
+                                    <Flex>
+                                      <Flex flexDirection="column">
+                                        {apiData.data.map((event, index) => (
+                                          <AddRemoveDataSources
+                                            key={index}
+                                            index={index}
+                                            dataSource={event}
+                                            removeDataSource={removeApiSource}
+                                            completeDataSource={
+                                              completeApiSource
+                                            }
+                                          />
+                                        ))}
+                                      </Flex>
+                                    </Flex>
+                                  </Flex>
+                                )}
+                              </Flex>
+                            </div>
+                          </TabPanel>
+                          <TabPanel>
+                            <div style={{ overflow: "auto" }}>
+                              <Flex>
+                                <DataSourceForm
+                                  addDataSource={addDataSource}
+                                  // addFunctions={addFunction}
+                                />
+                              </Flex>
+                              {/* Box with state change */}
+                              <Flex>
+                                {dataSource.length > 0 && (
                                   <Flex
-                                    flexDirection="column"
                                     width="100%"
-                                    justifyContent="center"
-                                    padding="15px"
-                                    paddingLeft="40px"
-                                    paddingRight="40px"
+                                    flexDirection="column"
+                                    padding="10px"
                                     style={{
                                       backgroundColor: colors.baseMuted,
                                       marginTop: 15,
                                       borderRadius: 10,
                                     }}
                                   >
-                                    {addedDataSources.length > 0 ? (
-                                      <>
-                                        <Flex justifyContent="space-between">
-                                          <Text textStyle="h6" mb="10px">
-                                            {i18n.__("dataSourcesUsed")}
-                                          </Text>
-                                          {!editControled ? (
-                                            <>
-                                              <button
-                                                style={{
-                                                  position: "absolute",
-                                                  right: 45,
-                                                  width: 40,
-                                                  height: 40,
-                                                  border: 0,
-                                                  background: "transparent",
-                                                }}
-                                                onClick={() => {
-                                                  setEditControled(true);
-                                                }}
-                                              >
-                                                <BlendIcon iconify={bxsEdit} />
-                                              </button>
-                                            </>
-                                          ) : (
-                                            <Flex>
-                                              <Button
-                                                variation="outline"
-                                                onClick={() => {
-                                                  setEditControled(false);
-                                                }}
-                                                size="xs"
-                                              >
-                                                {i18n.__("cancelButton")}
-                                              </Button>
-                                              <Button
-                                                onClick={() => {
-                                                  setEditControled(false);
-                                                }}
-                                                size="xs"
-                                                ml="5px"
-                                              >
-                                                {i18n.__("saveButton")}
-                                              </Button>
-                                            </Flex>
-                                          )}
-                                        </Flex>
-                                        <Flex
-                                          width="100%"
-                                          flexDirection="column"
-                                          style={{
-                                            backgroundColor: colors.baseMuted,
-                                            marginTop: 15,
-                                            borderRadius: 10,
-                                          }}
-                                        >
-                                          <Flex>
-                                            <Flex
-                                              flexDirection="column"
-                                              justifyContent="center"
-                                            >
-                                              {addedDataSources.map(
-                                                (event, index) => (
-                                                  <ControlAddedDataSources
-                                                    key={index}
-                                                    index={index}
-                                                    dataSource={event}
-                                                    uncompleteDataSource={
-                                                      uncompleteDataSource
-                                                    }
-                                                    editControled={
-                                                      editControled
-                                                    }
-                                                  />
-                                                ),
-                                              )}
-                                            </Flex>
-                                          </Flex>
-                                          <Flex
-                                            flexDirection="column"
-                                            alignSelf="flex-start"
-                                            mt="20px"
-                                          >
-                                            <Text mb="10px">
-                                              {!editControled
-                                                ? i18n.__(
-                                                    "pressEditToAddDetails",
-                                                  )
-                                                : i18n.__("addYourComment")}
-                                            </Text>
-                                            <textarea
-                                              style={{
-                                                resize: "none",
-                                                width: 750,
-                                                height: 100,
-                                              }}
-                                              disabled={
-                                                !editControled ? true : false
+                                    <Text textStyle="h6" mt="10px" mb="10px">
+                                      {i18n.__("dataConectorResults")}
+                                    </Text>
+
+                                    <Flex>
+                                      <Flex flexDirection="column">
+                                        {dataSource.map((event, index) => (
+                                          <>
+                                            <AddRemoveDataSources
+                                              key={index}
+                                              index={index}
+                                              dataSource={event}
+                                              removeDataSource={
+                                                removeDataSource
+                                              }
+                                              completeDataSource={
+                                                completeDataSource
                                               }
                                             />
-                                          </Flex>
-                                        </Flex>
-                                      </>
-                                    ) : (
-                                      <Flex
-                                        flexDirection="column"
-                                        alignItems="center"
-                                        justifyContent="center"
-                                      >
-                                        <Flex justifyContent="space-between">
-                                          <Text textStyle="h6" mb="10px">
-                                            {i18n.__("dataSourcesUsed")}
-                                          </Text>
-                                        </Flex>
-                                        <Flex
-                                          width="100%"
-                                          flexDirection="column"
-                                          alignItems="center"
-                                          justifyContent="center"
-                                          style={{
-                                            border: "1px dashed white",
-                                            marginTop: 15,
-                                            borderRadius: 10,
-                                          }}
-                                        >
-                                          <Text textStyle="h6" mt="10px">
-                                            {i18n.__("selectSources")}
-                                          </Text>
-                                          <Text textStyle="h6" mt="10px">
-                                            {i18n.__("dataSourcesYouAdd")}
-                                          </Text>
-                                        </Flex>
+                                            <div>{event.functions}</div>
+                                          </>
+                                        ))}
                                       </Flex>
-                                    )}
+                                    </Flex>
                                   </Flex>
-                                </div>
-                              </TabPanel>
-                              <TabPanel>
-                                <div style={{ overflow: "auto" }}>
-                                  <Text textStyle="h3" mb="15px">
-                                    {i18n.__("buildFiles")}
-                                  </Text>
-                                  <Box width="470px">
-                                    <Text textStyle="h6" mb="15px">
-                                      {i18n.__("buildFilesText")}
-                                    </Text>
-                                  </Box>
-                                </div>
-                              </TabPanel>
-                              <TabPanel>{/* Work panel 3 */}</TabPanel>
-                            </TabPanelList>
-                          </Tabs>
-                        </div>
-                      </TabPanel>
-                      <TabPanel>
-                        <Text mb="16px" color="textPriamry" fontSize="xs">
-                          {/* In progress...*/}
-                        </Text>
-                      </TabPanel>
-                    </TabPanelList>
-                  </Tabs>
-                </div>
+                                )}
+                              </Flex>
+                            </div>
+                          </TabPanel>
+                          <TabPanel>
+                            <div style={{ overflow: "auto" }}>
+                              <Flex>
+                                <Box
+                                  width="426px"
+                                  height="76px"
+                                  borderRadius="6px"
+                                  paddingLeft="10px"
+                                  bg={colors.baseLinkHover}
+                                  style={{
+                                    border: `2px solid ${colors.baseLink}`,
+                                  }}
+                                >
+                                  <Text>{i18n.__("noDataText")}</Text>
+                                  <Link>{i18n.__("learnMoreHere")}</Link>
+                                </Box>
+                                <Flex ml="10px">
+                                  {/* <CheckboxStateful /> */}
+                                </Flex>
+                              </Flex>
+                            </div>
+                          </TabPanel>
+                        </TabPanelList>
+                      </Tabs>
+                      <Flex>
+                        <Flex>
+                          {addedDataSources.length > 0 ? (
+                            <Flex
+                              flexDirection="column"
+                              justifyContent="center"
+                            >
+                              {addedDataSources.map((event, index) => (
+                                <ControlAddedDataSources
+                                  key={index}
+                                  index={index}
+                                  dataSource={event}
+                                  uncompleteDataSource={uncompleteDataSource}
+                                  editControled={editControled}
+                                  addDataSourceDetails={addDataSourceDetails}
+                                />
+                              ))}
+                            </Flex>
+                          ) : (
+                            <Flex
+                              flexDirection="column"
+                              justifyContent="center"
+                            >
+                              <Text mt="20px" mb="20px">
+                                Data sources used in your project
+                              </Text>
+                              <Flex
+                                style={{
+                                  border: "1px dashed #BC31EA",
+                                  width: 684,
+                                  height: 132,
+                                  borderRadius: 4,
+                                  background: "#F7DEFF",
+                                  flexDirection: "column",
+                                  justifyContent: "center",
+                                  alignItems: "center",
+                                }}
+                              >
+                                <Text fontSize="lg" color="#BC31EA">
+                                  Search and select data sources
+                                </Text>
+                                <Text mt="10px" color="#BC31EA">
+                                  Data sources you add will show up here
+                                </Text>
+                              </Flex>
+                            </Flex>
+                          )}
+                        </Flex>
+                      </Flex>
+                    </div>
+                  </Flex>
+                </Flex>
               </Flex>
             </>
           )}
@@ -1620,7 +1759,9 @@ const Home = props => {
       {!initClient && (
         <div>Home {isAuthenticated ? "Authenticated" : "Unauthenticated"} </div>
       )} */}
-      <Main />
+      <ToastContextProvider>
+        <Main />
+      </ToastContextProvider>
     </>
   );
 };

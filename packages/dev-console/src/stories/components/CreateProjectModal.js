@@ -55,44 +55,17 @@ const CreateProjectModal = ({ onClose, onButtonClick, ...props }) => {
     //version: "",
   });
 
-  const mutationAppVersion = {
-    "operationName":"newAppMutation",
-    "query": `
-    mutation newAppMutation($name: String, $title: String, $appType: AppType) {
-      createApp(data: {name: $name, title: $title, appType: $appType}) {
-        id
-      }
-    }`,
-    "variables": {"name": appFields.name, "title": appFields.title, "appType": appFields.appType || "App"}
-  }
-  const headers = {
-    "content-type": "application/json",
-      "Authorization": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImdjbXMtbWFpbi1wcm9kdWN0aW9uIn0.eyJ2ZXJzaW9uIjozLCJpYXQiOjE2NDQ0MzcyNTksImF1ZCI6WyJodHRwczovL2FwaS1ldS13ZXN0LTIuZ3JhcGhjbXMuY29tL3YyL2NremQzdnljaTFicDMwMXoxNGI3NzV0MG8vbWFzdGVyIiwiaHR0cHM6Ly9tYW5hZ2VtZW50LW5leHQuZ3JhcGhjbXMuY29tIl0sImlzcyI6Imh0dHBzOi8vbWFuYWdlbWVudC5ncmFwaGNtcy5jb20vIiwic3ViIjoiMzVhNmMxNTMtMmQxNS00ZjE2LWE4OTgtMTgyYTBlYzliY2I5IiwianRpIjoiY2t6ZnpoaHdpMTZhYTAxejIweWZmZms5YiJ9.f3nj1nk7m7mwEKx9PMafsbG9balRtuRl91bV8BBbqKceoS3C-HELxFpbbn4Y4zQL5I_7eI0uheeXaiM0vDkXyOXA11Y_wBgQBD4eYyQwtEB5SsO7p7ZgVXqw3lK7h4ojP2QW1LbgbX1RLK_4wqRz7ItK1HT5ve5SGuUiiBaQJY2nBK5ElMwJiS4cSzHwb3K7c9vOsIO92XLlDsyUR7A2ABGcovITaQ6jTY4Udh6hvjIqQk4hhfOthmAST_Mpb4bIzqkMVs8EEPWh_9z8WnSf-PS35B4Wh9xOLXrLSL58CLV4QZodVV3Tor3BOS93SpJnF14tFJ1XC6X9zyty7gqTLj6dxGzTK9ru501I4wgc3W4lVtdDciLy4Qe5_j9kkQdMnJb2PbmV24SOsNyTgOb5n0yQFcCSy_DGAf4CWyrXzzrPIM5VrbL_dOe2Hcui1O7xKf74CuQYJRDt08MtJXgPEFDdpfidr7riBqu6DB_7L2RcsrerOsiy3GSr_9eY2I9x-Pv8NMBeNsrKS_M-j1n0PbwamgQKHYXrGMQf1LXNHRyiLAtHYI0GTL-6Xx0wNfiqUc_GXvsd0LWqAtfFClIThFpJAER-rOcXCn7eaRY2Gnoi7JiCx_xw0qbxQ1CFZlPB_Xgzhj-xG7oRPucXsmXlzeAxTg-rUsj_zZkrHX2D3iY"
-  };
-
-  const axios = require("axios"); 
-
   const createApp = async e => {
     try {
-      console.log("CLICK ", appFields)
+      console.log("CLICK ", appFields);
 
-      
-
-      // await newAppVersionMutation(API, appFields.appId, currentUser.prifinaID, {
-      //   name: appFields.name,
-      //   title: appFields.title,
-      //   identity: currentUser.identity,
-      //   identityPool: currentUser.identityPool,
-      //   //version: appFields.version,
-      // });
-      const repsonse = await axios({
-        url: "https://api-eu-west-2.graphcms.com/v2/ckzd3vyci1bp301z14b775t0o/master",
-        method: 'post',
-        headers: headers,
-        data: mutationAppVersion
+      await newAppVersionMutation(API, appFields.appId, currentUser.prifinaID, {
+        name: appFields.name,
+        title: appFields.title,
+        identity: currentUser.identity,
+        identityPool: currentUser.identityPool,
+        //version: appFields.version,
       });
-      console.log(repsonse)
-
       history.push("/");
     } catch (e) {
       console.log("error ", e);

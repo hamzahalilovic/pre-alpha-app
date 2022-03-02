@@ -25,7 +25,7 @@ import { i18n } from "@prifina-apps/utils";
 import bxsEdit from "@iconify/icons-bx/bx-edit-alt";
 import bxsXCircle from "@iconify/icons-bx/bx-x-circle";
 
-import * as C from "./components";
+import * as C from "../../components/components";
 
 i18n.init();
 
@@ -73,7 +73,7 @@ export function AddRemoveDataSources({
       height="72px"
       border="1px solid gray"
       borderRadius="10px"
-      width="834px"
+      width="668px"
       paddingLeft="15px"
       paddingRight="15px"
       marginTop="5px"
@@ -174,12 +174,21 @@ export function ControlAddedDataSources({
   index,
   uncompleteDataSource,
   editControled,
+  addDataSourceDetails
 }) {
   const theme = useTheme();
 
   const { colors } = useTheme();
 
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  const [details, setDetails] = React.useState(dataSource.details)
+  const [tempDetails, setTempDetails] = React.useState(dataSource.details)
+  
+  let handleInputChange = (e) => {
+    let inputValue = e.target.value
+    setTempDetails(inputValue)
+  }
 
   const onCloseCheck = (e, action) => {
     console.log("MODAL CLOSE ", e, action);
@@ -192,7 +201,7 @@ export function ControlAddedDataSources({
       height="72px"
       border="1px solid gray"
       borderRadius="10px"
-      width="834px"
+      width="668px"
       paddingLeft="15px"
       paddingRight="15px"
       marginTop="5px"
@@ -299,7 +308,7 @@ export function ControlAddedDataSources({
                   <Text mt="20px">{i18n.__("publicApiAdress")}</Text>
                   <Input value={dataSource.text} disabled />
                   <Text mt="20px">{i18n.__("listDataAttributesUsed")}</Text>
-                  {/* <textarea style={{ height: 100 }} /> */}
+                  <textarea style={{ height: 100 }} value={tempDetails} onChange={handleInputChange}/>
                 </Flex>
               </ModalBody>
               <ModalFooter
@@ -312,6 +321,7 @@ export function ControlAddedDataSources({
                   colorStyle={"error"}
                   onClick={e => {
                     setDialogOpen(false);
+                    setTempDetails(details)
 
                     e.preventDefault();
                   }}
@@ -322,6 +332,8 @@ export function ControlAddedDataSources({
                   onClick={e => {
                     setDialogOpen(false);
                     ///further implementation
+                    setDetails(tempDetails)
+                    addDataSourceDetails(index,tempDetails)
                     e.preventDefault();
                   }}
                 >
@@ -331,24 +343,24 @@ export function ControlAddedDataSources({
             </ModalContent>
           </Modal>
         </>
-        {editControled ? (
-          <>
-            <button
-              onClick={() => setDialogOpen(true)}
-              style={{ width: 50, height: 50, marginRight: 5 }}
-            >
-              <BlendIcon iconify={bxsEdit} />
-            </button>
-            <button
-              onClick={() => uncompleteDataSource(index)}
-              style={{ width: 50, height: 50 }}
-            >
-              <Text textStyle="h3" colorStyle="error">
-                x
-              </Text>
-            </button>
-          </>
-        ) : null}
+        {/* {editControled ? ( */}
+        <>
+          <button
+            onClick={() => setDialogOpen(true)}
+            style={{ width: 50, height: 50, marginRight: 5 }}
+          >
+            <BlendIcon iconify={bxsEdit} />
+          </button>
+          <button
+            onClick={() => uncompleteDataSource(index)}
+            style={{ width: 50, height: 50 }}
+          >
+            <Text textStyle="h3" colorStyle="error">
+              x
+            </Text>
+          </button>
+        </>
+        {/* ) : null} */}
       </Flex>
     </Flex>
   );
@@ -359,6 +371,7 @@ ControlAddedDataSources.propTypes = {
   index: PropTypes.number,
   uncompleteDataSource: PropTypes.func,
   editControled: PropTypes.bool,
+  addDataSourceDetails: PropTypes.func
 };
 
 export function DataSourceForm({ addDataSource }) {
@@ -406,10 +419,10 @@ export function DataSourceForm({ addDataSource }) {
           showList={true}
           selectOption="value"
           size="sm"
-          width="834px"
+          width="668px"
           onChange={handleChange}
         />
-        <button
+        {/* <button
           style={{ width: 48, height: 48, marginLeft: 4 }}
           onChange={e => {
             console.log("CLICK ", e.target.value);
@@ -418,7 +431,7 @@ export function DataSourceForm({ addDataSource }) {
           }}
         >
           +
-        </button>
+        </button> */}
       </Flex>
     </form>
   );
@@ -442,19 +455,19 @@ export function ApiForm({ addApi }) {
     <form onSubmit={handleSubmit}>
       <Flex alignItems="center">
         <C.StyledInput
-          width="834px"
+          width="668px"
           type="text"
           className="input"
           value={value}
           onChange={e => setValue(e.target.value)}
         />
 
-        <button
+        {/* <button
           style={{ width: 48, height: 48, marginLeft: 4 }}
           onChange={e => setValue(e.currentTarget.value)}
         >
           +
-        </button>
+        </button> */}
       </Flex>
     </form>
   );
