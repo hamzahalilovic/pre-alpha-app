@@ -182,6 +182,7 @@ export function ControlAddedDataSources({
 
   const [dialogOpen, setDialogOpen] = useState(false);
 
+
   const [details, setDetails] = React.useState(dataSource.details)
   const [tempDetails, setTempDetails] = React.useState(dataSource.details)
   
@@ -308,7 +309,9 @@ export function ControlAddedDataSources({
                   <Text mt="20px">{i18n.__("publicApiAdress")}</Text>
                   <Input value={dataSource.text} disabled />
                   <Text mt="20px">{i18n.__("listDataAttributesUsed")}</Text>
+
                   <textarea style={{ height: 100 }} value={tempDetails} onChange={handleInputChange}/>
+
                 </Flex>
               </ModalBody>
               <ModalFooter
@@ -321,7 +324,9 @@ export function ControlAddedDataSources({
                   colorStyle={"error"}
                   onClick={e => {
                     setDialogOpen(false);
+
                     setTempDetails(details)
+
 
                     e.preventDefault();
                   }}
@@ -333,7 +338,6 @@ export function ControlAddedDataSources({
                     setDialogOpen(false);
                     ///further implementation
                     setDetails(tempDetails)
-                    addDataSourceDetails(index,tempDetails)
                     e.preventDefault();
                   }}
                 >

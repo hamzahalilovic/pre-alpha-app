@@ -5,6 +5,7 @@
     "1.f877af69.iframe.bundle.js.map": "./1.f877af69.iframe.bundle.js.map",
     "2.4d806e1d.iframe.bundle.js": "./2.4d806e1d.iframe.bundle.js",
     "3.f93cceb8.iframe.bundle.js": "./3.f93cceb8.iframe.bundle.js",
+
     "main.js": "./main.b22647cf.iframe.bundle.js",
     "runtime~main.js": "./runtime~main.17559b4d.iframe.bundle.js",
     "vendors~main.js": "./vendors~main.fbf82096.iframe.bundle.js",
@@ -20,11 +21,13 @@
     "static/media/background.b3d5f165.png": "./static/media/background.b3d5f165.png",
     "static/media/cardPrifinaLogo.6ab2fbb8.svg": "./static/media/cardPrifinaLogo.6ab2fbb8.svg",
     "static/media/dashboard-banner.bd5360e7.png": "./static/media/dashboard-banner.bd5360e7.png",
+
     "vendors~main.fbf82096.iframe.bundle.js.LICENSE.txt": "./vendors~main.fbf82096.iframe.bundle.js.LICENSE.txt"
   },
   "entrypoints": [
     "runtime~main.17559b4d.iframe.bundle.js",
     "vendors~main.fbf82096.iframe.bundle.js",
     "main.b22647cf.iframe.bundle.js"
+
   ]
 }

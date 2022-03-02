@@ -15,8 +15,6 @@
     "start": "cross-env PORT=3001 react-scripts start",
     "build": "react-scripts build",
     "storybook": "start-storybook",
-    "build-storybook": "build-storybook -s public",
-    "chromatic": "npx chromatic --project-token=389a4e5587e0 -d storybook-static"
   },
   "devDependencies": {
     "@babel/cli": "^7.15.4",

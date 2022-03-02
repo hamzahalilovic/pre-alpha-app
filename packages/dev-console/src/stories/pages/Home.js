@@ -153,8 +153,10 @@ const Main = ({
   const { colors } = useTheme();
 
   const toast = useToast();
+
   const [differenceDataSources, setDifferenceDataSources] = useState(false);
   // const [permDataSource, setPermDataSource] = useState([]);
+
 
   const versionStatus = [
     "init",
@@ -171,6 +173,7 @@ const Main = ({
   const [saved, setSaved] = useState(false);
   const [savedResources, setSavedResources] = useState(false);
   const [savedBuild, setSavedBuild] = useState(false);
+
 
   function handleChange(event) {
     setFile(event.target.files[0]);
@@ -202,7 +205,6 @@ const Main = ({
 
   // let data = [  ];
 
- 
 
   const saveChanges = async () => {
     const updateAppDetails = {
@@ -243,6 +245,7 @@ const Main = ({
       allValues.type !== allValues.newType
     ) {
       return (
+
         
         <Flex alignItems="center">
           <Text fontSize="xs">Unsaved Changes</Text>
@@ -297,6 +300,7 @@ const Main = ({
       );
     }
   };
+
 
   const warningResources = () => {
     if (
@@ -441,6 +445,7 @@ const Main = ({
     }
   };
 
+
   const buttons = () => {
     console.log(allValues);
     if (allValues.newType === "App") {
@@ -507,6 +512,7 @@ const Main = ({
 
   const fetchApps = async e => {
     try {
+
       const repsonse = await axios({
         url: "https://api-eu-west-2.graphcms.com/v2/ckzd3vyci1bp301z14b775t0o/master",
         method: "post",
@@ -615,12 +621,14 @@ const Main = ({
 
   }
 
+
   const headers = {
     "content-type": "application/json",
     Authorization:
       "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImdjbXMtbWFpbi1wcm9kdWN0aW9uIn0.eyJ2ZXJzaW9uIjozLCJpYXQiOjE2NDQ0MzcyNTksImF1ZCI6WyJodHRwczovL2FwaS1ldS13ZXN0LTIuZ3JhcGhjbXMuY29tL3YyL2NremQzdnljaTFicDMwMXoxNGI3NzV0MG8vbWFzdGVyIiwiaHR0cHM6Ly9tYW5hZ2VtZW50LW5leHQuZ3JhcGhjbXMuY29tIl0sImlzcyI6Imh0dHBzOi8vbWFuYWdlbWVudC5ncmFwaGNtcy5jb20vIiwic3ViIjoiMzVhNmMxNTMtMmQxNS00ZjE2LWE4OTgtMTgyYTBlYzliY2I5IiwianRpIjoiY2t6ZnpoaHdpMTZhYTAxejIweWZmZms5YiJ9.f3nj1nk7m7mwEKx9PMafsbG9balRtuRl91bV8BBbqKceoS3C-HELxFpbbn4Y4zQL5I_7eI0uheeXaiM0vDkXyOXA11Y_wBgQBD4eYyQwtEB5SsO7p7ZgVXqw3lK7h4ojP2QW1LbgbX1RLK_4wqRz7ItK1HT5ve5SGuUiiBaQJY2nBK5ElMwJiS4cSzHwb3K7c9vOsIO92XLlDsyUR7A2ABGcovITaQ6jTY4Udh6hvjIqQk4hhfOthmAST_Mpb4bIzqkMVs8EEPWh_9z8WnSf-PS35B4Wh9xOLXrLSL58CLV4QZodVV3Tor3BOS93SpJnF14tFJ1XC6X9zyty7gqTLj6dxGzTK9ru501I4wgc3W4lVtdDciLy4Qe5_j9kkQdMnJb2PbmV24SOsNyTgOb5n0yQFcCSy_DGAf4CWyrXzzrPIM5VrbL_dOe2Hcui1O7xKf74CuQYJRDt08MtJXgPEFDdpfidr7riBqu6DB_7L2RcsrerOsiy3GSr_9eY2I9x-Pv8NMBeNsrKS_M-j1n0PbwamgQKHYXrGMQf1LXNHRyiLAtHYI0GTL-6Xx0wNfiqUc_GXvsd0LWqAtfFClIThFpJAER-rOcXCn7eaRY2Gnoi7JiCx_xw0qbxQ1CFZlPB_Xgzhj-xG7oRPucXsmXlzeAxTg-rUsj_zZkrHX2D3iY",
   };
   const getAppsQuery = {
+
     "operationName":"getApps",
     "query": `
     query getApps {
@@ -650,6 +658,7 @@ const Main = ({
       }
     }`,
   "variables": ""}
+
   // let data = [
   //   {
   //     "color": "purple",
@@ -673,13 +682,12 @@ const Main = ({
     name: "",
     id: "",
     type: "",
+
     version: "",
     newName: "",
     newType: "",
     newVersion: "",
   });
-
-
 
   const onRowClick = (state, rowInfo, column, instance) => {
     return {
@@ -697,6 +705,7 @@ const Main = ({
             onClick={() => {
               setStep(3);
               setSaved(false);
+
               // setAllValues({
               //   ...allValues,
               //   // title: widgets.current[w].title,
@@ -806,11 +815,13 @@ const Main = ({
         return <Text>{moment(props.cell.value).toDate().toUTCString()}</Text>;
       },
     },
+
     {
       Header: "dataSource",
       accessor: "dataSource"
     },
     
+
     // {
     //   Header: "ID",
     //   accessor: "id",
@@ -885,12 +896,14 @@ const Main = ({
   };
 
   const [dataSource, setDataSource] = useState([]);
+
   
   
   const [apiData, setApiData] = useState({
       data: [],
       history: []
   });
+
 
   console.log("CLOUD DATA", dataSource);
   console.log("API DATA", apiData);
@@ -951,15 +964,18 @@ const Main = ({
       history: [...apiData.history]
     });
     console.log(apiData)
+
   };
 
   ////common data sources
 
   const uncompleteDataSource = index => {
     const newSourceData = [...apiData.data];
+
     newSourceData[index].isAdded = false;
     setAddedDataSources2(newSourceData);
   };
+
 
   const addDataSourceDetails = (index,text) => {
     const newSourceData = [...apiData.data];
@@ -976,6 +992,7 @@ const Main = ({
     // console.log("3")
 
   };
+
 
   const [step, setStep] = useState(0);
 
@@ -1054,6 +1071,7 @@ const Main = ({
       return console.log("false");
     }
   }, [allValues.newName]);
+
 
   useEffect(() => {
     // console.log("all", dataSource.concat(apiData))
@@ -1305,7 +1323,9 @@ const Main = ({
                   <Flex justifyContent="space-between">
                     <Text textStyle="h4">Build deployment</Text>
                     <Flex alignItems="center">
+
                       {warningBuild()}
+
                     </Flex>
                   </Flex>
                   <Flex
@@ -1342,6 +1362,7 @@ const Main = ({
                     <Box marginLeft="10px">
                       <Text fontSize="sm">Version number</Text>
                       <Input width="684px" label="text" value={allValues.newVersion} onChange={handleVersionChange}/>
+
                     </Box>
                   </Flex>
                   <Flex
@@ -1390,11 +1411,13 @@ const Main = ({
                   <Flex justifyContent="space-between">
                     <Text textStyle="h3">Data resources</Text>
                     <Flex alignItems="center">
+
                       {/* <Text fontSize="xs">No changes detected</Text> */}
                       {/* <Button ml="17px" disabled>
                         Save Changes
                       </Button> */}
                       {warningResources()}
+
                     </Flex>
                   </Flex>
                   <Flex
@@ -1457,7 +1480,9 @@ const Main = ({
 
                               {/* Box with state change */}
                               <Flex>
+
                                 {apiData.data.length > 0 && (
+
                                   <Flex
                                     width="100%"
                                     flexDirection="column"
@@ -1472,7 +1497,9 @@ const Main = ({
                                     </Text>
                                     <Flex>
                                       <Flex flexDirection="column">
+
                                         {apiData.data.map((event, index) => (
+
                                           <AddRemoveDataSources
                                             key={index}
                                             index={index}
@@ -1578,7 +1605,9 @@ const Main = ({
                                   dataSource={event}
                                   uncompleteDataSource={uncompleteDataSource}
                                   editControled={editControled}
+
                                   addDataSourceDetails={addDataSourceDetails}
+
                                 />
                               ))}
                             </Flex>
