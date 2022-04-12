@@ -89,6 +89,8 @@ import {
   ApiForm,
 } from "../components/helper";
 
+import Sandbox from "./Sandbox";
+
 // Create a default prop getter
 const defaultPropGetter = () => ({});
 
@@ -633,7 +635,7 @@ const Main = ({
         appStatus
         version
         updatedAt
-        dataSource {
+        dataSource2 {
           __typename
           ... on Api {
             id
@@ -677,6 +679,7 @@ const Main = ({
     newName: "",
     newType: "",
     newVersion: "",
+    graphqlid: ""
   });
 
 
@@ -712,7 +715,7 @@ const Main = ({
                   // title: widgets.current[w].title,
                   name: props.cell.value,
                   newName: props.cell.value,
-                  id: props.row.values.id,
+                  id: props.row.values.appId,
                   type: props.row.values.appType,
                   newType: props.row.values.appType,
                   version: "",
@@ -725,11 +728,12 @@ const Main = ({
                   // title: widgets.current[w].title,
                   name: props.cell.value,
                   newName: props.cell.value,
-                  id: props.row.values.id,
+                  id: props.row.values.appId,
                   type: props.row.values.appType,
                   newType: props.row.values.appType,
                   version: props.row.values.version.toString(),
-                  newVersion: props.row.values.version.toString()
+                  newVersion: props.row.values.version.toString(),
+                  graphqlid: props.row.values.id
                 });
               }
 
@@ -738,7 +742,7 @@ const Main = ({
               setSavedResources(false)
               console.log("test - ", props.row.values.version.toString())
               let x = []
-              props.row.values.dataSource.map(dataSource => {
+              props.row.values.dataSource2.map(dataSource => {
                 if (dataSource.__typename==="Api")
                 x.push({"text": dataSource.url, "isAdded":dataSource.added, "id": dataSource.id, "details": dataSource.desc})
               })
@@ -770,8 +774,8 @@ const Main = ({
     },
     {
       Header: "App ID",
-      // accessor: "appId",
-      accessor: "id",
+      accessor: "appId",
+      // accessor: "id",
       Cell: props => {
         return <Text>{props.cell.value}</Text>;
       },
@@ -786,6 +790,10 @@ const Main = ({
     {
       Header: "Title",
       accessor: "title",
+    },
+    {
+      Header: "id",
+      accessor: "id",
     },
     {
       Header: "Status",
@@ -807,8 +815,8 @@ const Main = ({
       },
     },
     {
-      Header: "dataSource",
-      accessor: "dataSource"
+      Header: "dataSource2",
+      accessor: "dataSource2"
     },
     
     // {
@@ -1083,8 +1091,11 @@ const Main = ({
   }, [addedDataSources]);
 
   return (
+    
     <React.Fragment>
-      <DevConsoleSidebar items={items} />
+        {(step === 0 || step === 1 || step === 2 || step === 3) && (
+          <>
+                <DevConsoleSidebar items={items} />
       <C.NavbarContainer bg="baseWhite">
         <DevConsoleLogo className="appStudio" />
       </C.NavbarContainer>
@@ -1270,7 +1281,9 @@ const Main = ({
                     {warning()}
                   </Flex>
                 </Flex>
-                <Button>{i18n.__("launchSandbox")}</Button>
+                
+                <Button onClick={()=>{setStep(4); console.log("next page")}}>{i18n.__("launchSandbox")}</Button>
+                
               </Flex>
               <Flex
                 flexDirection="column"
@@ -1617,8 +1630,27 @@ const Main = ({
               </Flex>
             </>
           )}
+          
         </Flex>
+        
       </StyledBox>
+          </>
+        )}
+
+          {step === 4 && (
+            <>
+            <Sandbox 
+            type={allValues.type}
+            name={allValues.name}
+            return={()=>{setStep(3)}}
+            id={allValues.id}
+            GcmsID={allValues.graphqlid}
+            />
+            </>
+
+          )
+            
+          }
     </React.Fragment>
   );
 };
