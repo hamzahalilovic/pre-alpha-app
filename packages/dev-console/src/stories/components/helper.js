@@ -174,12 +174,21 @@ export function ControlAddedDataSources({
   index,
   uncompleteDataSource,
   editControled,
+  addDataSourceDetails
 }) {
   const theme = useTheme();
 
   const { colors } = useTheme();
 
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  const [details, setDetails] = React.useState(dataSource.details)
+  const [tempDetails, setTempDetails] = React.useState(dataSource.details)
+  
+  let handleInputChange = (e) => {
+    let inputValue = e.target.value
+    setTempDetails(inputValue)
+  }
 
   const onCloseCheck = (e, action) => {
     console.log("MODAL CLOSE ", e, action);
@@ -299,7 +308,7 @@ export function ControlAddedDataSources({
                   <Text mt="20px">{i18n.__("publicApiAdress")}</Text>
                   <Input value={dataSource.text} disabled />
                   <Text mt="20px">{i18n.__("listDataAttributesUsed")}</Text>
-                  <textarea style={{ height: 100 }} />
+                  <textarea style={{ height: 100 }} value={tempDetails} onChange={handleInputChange}/>
                 </Flex>
               </ModalBody>
               <ModalFooter
@@ -312,6 +321,7 @@ export function ControlAddedDataSources({
                   colorStyle={"error"}
                   onClick={e => {
                     setDialogOpen(false);
+                    setTempDetails(details)
 
                     e.preventDefault();
                   }}
@@ -322,6 +332,8 @@ export function ControlAddedDataSources({
                   onClick={e => {
                     setDialogOpen(false);
                     ///further implementation
+                    setDetails(tempDetails)
+                    addDataSourceDetails(index,tempDetails)
                     e.preventDefault();
                   }}
                 >
@@ -359,6 +371,7 @@ ControlAddedDataSources.propTypes = {
   index: PropTypes.number,
   uncompleteDataSource: PropTypes.func,
   editControled: PropTypes.bool,
+  addDataSourceDetails: PropTypes.func
 };
 
 export function DataSourceForm({ addDataSource }) {
